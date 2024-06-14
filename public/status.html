@@ -24,15 +24,44 @@
                 </div>
             </nav>
         </header>
-        <main>
-            <div id="status-section">
-                <!-- Status do Pedido -->
-            </div>
+        <main class="container mt-5">
+            <div id="order-status" class="text-center"></div>
         </main>
-        <footer>
-            <p>&copy; 2024 QACommerce</p>
+        <footer class="mt-5">
+            <p class="text-center">&copy; 2024 QACommerce</p>
         </footer>
     </div>
-    <script src="js/status.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const orderId = urlParams.get('orderId');
+            
+            fetch(`/api/orders/${orderId}`)
+                .then(response => response.json())
+                .then(order => {
+                    const orderStatus = document.getElementById('order-status');
+                    if (order.id) {
+                        orderStatus.innerHTML = `
+                            <h2>Status do Pedido</h2>
+                            <p>Obrigado pelo seu pedido, ${order.first_name}.</p>
+                            <p>ID do Pedido: <strong>${order.formattedOrderId}</strong></p>
+                            <p>Total: <strong>R$${order.total_price.toFixed(2)}</strong></p>
+                            <p>Status: <strong>${order.status}</strong></p>
+                            <p>Agradecemos a sua preferência!</p>
+                        `;
+                    } else {
+                        orderStatus.innerHTML = `
+                            <p class="text-danger">Pedido não encontrado</p>
+                        `;
+                    }
+                })
+                .catch(error => {
+                    document.getElementById('order-status').innerHTML = `
+                        <p class="text-danger">Erro ao buscar status do pedido</p>
+                    `;
+                    console.error('Erro ao buscar status do pedido:', error);
+                });
+        });
+    </script>
 </body>
 </html>

@@ -25,49 +25,69 @@
             </nav>
         </header>
         <main class="container mt-5">
-            <form id="checkout-form" class="row">
+            <!-- Contêiner de Alerta -->
+            <div id="alert-container" class="alert alert-danger d-none"></div>
+
+            <form id="checkout-form" class="row" novalidate> <!-- Desativa a validação padrão do HTML5 -->
                 <div class="col-md-6">
                     <h4>Dados Pessoais e Endereço</h4>
                     <div class="form-group mb-3">
                         <label for="first-name">Nome</label>
-                        <input type="text" id="first-name" class="form-control" required>
+                        <input type="text" id="first-name" class="form-control">
                     </div>
                     <div class="form-group mb-3">
                         <label for="last-name">Sobrenome</label>
-                        <input type="text" id="last-name" class="form-control" required>
+                        <input type="text" id="last-name" class="form-control">
                     </div>
                     <div class="form-group mb-3">
                         <label for="address">Endereço</label>
-                        <input type="text" id="address" class="form-control" required>
+                        <input type="text" id="address" class="form-control">
                     </div>
                     <div class="form-group mb-3">
                         <label for="number">Número</label>
-                        <input type="text" id="number" class="form-control" required>
+                        <input type="text" id="number" class="form-control">
                     </div>
                     <div class="form-group mb-3">
                         <label for="cep">CEP</label>
-                        <input type="text" id="cep" class="form-control" required>
+                        <input type="text" id="cep" class="form-control">
                     </div>
                     <div class="form-group mb-3">
                         <label for="phone">Telefone</label>
-                        <input type="text" id="phone" class="form-control" required>
+                        <input type="text" id="phone" class="form-control">
                     </div>
                     <div class="form-group mb-3">
                         <label for="email">Email</label>
-                        <input type="email" id="email" class="form-control" required>
+                        <input type="text" id="email" class="form-control"> 
                     </div>
                     <div class="form-group form-check mb-3">
-                        <input type="checkbox" class="form-check-input" id="terms">
-                        <label class="form-check-label" for="terms">Li e concordo com o(s) <a href="#">termos e condições do site</a> *</label>
+                        <input type="checkbox" class="form-check-input" id="create-account">
+                        <label class="form-check-label" for="create-account">Deseja criar uma conta com esses dados para compras futuras?</label>
                     </div>
-                    <p>Seus dados pessoais serão usados para processar seu pedido, apoiar sua experiência neste site e para outros fins descritos em nossa política de privacidade.</p>
+                    <div id="password-fields" class="d-none">
+                        <div class="form-group mb-3">
+                            <label for="password">Senha</label>
+                            <input type="password" id="password" class="form-control">
+                        </div>
+                        <div class="form-group mb-3">
+                            <label for="confirm-password">Confirmar Senha</label>
+                            <input type="password" id="confirm-password" class="form-control">
+                        </div>
+                        <p>A senha deve conter no mínimo 6 caracteres, incluindo uma letra maiúscula e um caractere especial.</p>
+                    </div>
+                    
+                    <p>Seus dados pessoais serão usados para processar seu pedido, apoiar sua experiência neste site e para outros fins descritos em nossa <a href="/terms.html">política de privacidade</a>.</p>
+                    <div class="form-check">
+                        <input type="checkbox" id="terms" name="terms" class="form-check-input" required>
+                        <label for="terms" class="form-check-label">Li e concordo com o(s) termos e condições do site *</label>
+                    </div>
+                    
                 </div>
                 <div class="col-md-6">
                     <h4>Formas de Pagamento</h4>
                     <div class="form-group mb-3">
                         <label>Escolha a forma de pagamento:</label>
                         <div class="form-check">
-                            <input type="radio" name="payment-method" value="card" class="form-check-input" id="payment-card" required>
+                            <input type="radio" name="payment-method" value="card" class="form-check-input" id="payment-card">
                             <label for="payment-card" class="form-check-label">Cartão de Crédito</label>
                         </div>
                         <div class="form-check">
@@ -101,8 +121,8 @@
                     <div id="pix-details" class="d-none">
                         <h5>Detalhes do Pix</h5>
                         <p>Chave Pix: <span id="pix-key"></span></p>
-                        <p>QR Code:</p>
-                        <img id="pix-qr-code" src="" alt="QR Code Pix" />
+                        <!-- <p>QR Code:</p>
+                        <img id="pix-qr-code" src="" alt="QR Code Pix" /> -->
                     </div>
                     <button type="submit" class="btn btn-primary">Finalizar Pedido</button>
                 </div>

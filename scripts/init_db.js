@@ -1,7 +1,8 @@
 const db = require('../config/db');
 
-// Criar tabelas
+// Criar tabelas e inserir dados
 db.serialize(() => {
+    // Tabela de usuários
     db.run(`
         CREATE TABLE IF NOT EXISTS Users (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -11,6 +12,7 @@ db.serialize(() => {
         )
     `);
 
+    // Tabela de produtos
     db.run(`
         CREATE TABLE IF NOT EXISTS Products (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -21,6 +23,7 @@ db.serialize(() => {
         )
     `);
 
+    // Tabela de carrinho
     db.run(`
         CREATE TABLE IF NOT EXISTS Cart (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -32,6 +35,7 @@ db.serialize(() => {
         )
     `);
 
+    // Tabela de pedidos
     db.run(`
         CREATE TABLE IF NOT EXISTS Orders (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -57,10 +61,11 @@ db.serialize(() => {
 
     console.log("Tabelas criadas com sucesso.");
 
-    // Inserir dados de exemplo
-    db.run("INSERT INTO Products (name, description, price, image) VALUES ('Produto 1', 'Descrição do Produto 1', 10.0, 'images/example.jpg')");
-    db.run("INSERT INTO Products (name, description, price, image) VALUES ('Produto 2', 'Descrição do Produto 2', 20.0, 'images/example.jpg')");
-    db.run("INSERT INTO Products (name, description, price, image) VALUES ('Produto 3', 'Descrição do Produto 3', 30.0, 'images/example.jpg')");
+    // Inserir dados de exemplo para produtos
+    db.run("INSERT INTO Products (name, description, price, image) VALUES ('Produto 1', 'Descrição do Produto 1', 10.0, 'images/imagem1.png')");
+    db.run("INSERT INTO Products (name, description, price, image) VALUES ('Produto 2', 'Descrição do Produto 2', 20.0, 'images/imagem2.png')");
+    db.run("INSERT INTO Products (name, description, price, image) VALUES ('Produto 3', 'Descrição do Produto 3', 30.0, 'images/imagem3.png')");
+    
 });
 
 db.close();
