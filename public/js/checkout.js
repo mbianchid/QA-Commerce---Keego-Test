@@ -156,12 +156,10 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         // Verificar os campos de pagamento com cartão se a opção for selecionada
-        if (document.querySelector('input[name="payment-method"]:checked').value === 'card') {
-            const cardFields = [
-                'card-number',
-                'card-expiry',
-                'card-cvc'
-            ];
+        let paymentMethod = document.querySelector('input[name="payment-method"]:checked').value;
+        if (paymentMethod === 'card') {
+            paymentMethod = 'credit_card';
+            const cardFields = ['card-number', 'card-expiry', 'card-cvc'];
             cardFields.forEach(fieldId => {
                 const field = document.getElementById(fieldId);
                 if (!field.value.trim()) {
@@ -189,7 +187,7 @@ document.addEventListener('DOMContentLoaded', function() {
             cep: document.getElementById('cep').value,
             phone: document.getElementById('phone').value,
             email: document.getElementById('email').value,
-            paymentMethod: document.querySelector('input[name="payment-method"]:checked').value,
+            paymentMethod: paymentMethod,
             createAccount: createAccountCheckbox.checked,
         };
 
@@ -197,7 +195,7 @@ document.addEventListener('DOMContentLoaded', function() {
             formData.password = document.getElementById('password').value;
         }
 
-        if (formData.paymentMethod === 'card') {
+        if (formData.paymentMethod === 'credit_card') {
             formData.cardNumber = document.getElementById('card-number').value;
             formData.cardExpiry = document.getElementById('card-expiry').value;
             formData.cardCvc = document.getElementById('card-cvc').value;
@@ -221,11 +219,6 @@ document.addEventListener('DOMContentLoaded', function() {
             return response.json();
         })
         .then(data => {
-            // Armazenar no sessionStorage ao criar uma conta
-            if (createAccountCheckbox.checked) {
-                sessionStorage.setItem('user', JSON.stringify({ id: userId, name: `${formData.firstName} ${formData.lastName}` }));
-            }
-
             // Redirecionar para a página de status do pedido
             window.location.href = `/status.html?orderId=${data.id}`;
         })

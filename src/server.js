@@ -37,7 +37,7 @@ const checkoutSchema = Joi.object({
     }),
     cardCvc: Joi.string().when('paymentMethod', {
         is: 'credit_card',
-        then: Joi.string().length(3).required(),
+        then: Joi.string().min(3).max(4).required(),
         otherwise: Joi.optional()
     }),
     boletoCode: Joi.string().when('paymentMethod', {
@@ -64,6 +64,7 @@ app.get('/api/produtos', (req, res) => {
         if (err) {
             res.status(500).send("Erro ao buscar produtos.");
         } else {
+            // Consultar o total de produtos para calcular o número de páginas
             db.get("SELECT COUNT(*) as total FROM Products", (err, result) => {
                 if (err) {
                     res.status(500).send("Erro ao calcular o total de produtos.");
@@ -173,26 +174,6 @@ app.get('/api/orders', (req, res) => {
     });
 });
 
-// Rota para obter detalhes de um pedido específico
-app.get('/api/orders/:orderId', (req, res) => {
-    const orderId = req.params.orderId;
-    db.get("SELECT Orders.*, Users.name FROM Orders JOIN Users ON Orders.user_id = Users.id WHERE Orders.id = ?", [orderId], (err, row) => {
-        if (err) {
-            return res.status(500).send("Erro ao buscar status do pedido.");
-        } 
-        
-        if (!row) {
-            return res.status(404).send("Pedido não encontrado.");
-        }
-
-        const formattedOrderId = `${row.id}.${Math.floor(Math.random() * 900) + 100}-${Math.floor(Math.random() * 90) + 10}`;
-        res.json({
-            ...row,
-            formattedOrderId
-        });
-    });
-});
-
 // Limpar o carrinho para um usuário específico
 app.post('/api/limpar-carrinho', (req, res) => {
     const { userId } = req.body;
@@ -259,6 +240,40 @@ app.delete('/api/carrinho/:userId/:productId', (req, res) => {
     });
 });
 
+// Rota para obter detalhes de um produto específico
+app.get('/api/produtos/:id', (req, res) => {
+    const productId = req.params.id;
+    db.get("SELECT * FROM Products WHERE id = ?", [productId], (err, row) => {
+        if (err) {
+            res.status(500).send("Erro ao buscar detalhes do produto.");
+        } else if (!row) {
+            res.status(404).send("Produto não encontrado.");
+        } else {
+            res.json(row);
+        }
+    });
+});
+
+// Rota para obter status do pedido
+app.get('/api/orders/:orderId', (req, res) => {
+    const orderId = req.params.orderId;
+    db.get("SELECT * FROM Orders WHERE id = ?", [orderId], (err, row) => {
+        if (err) {
+            return res.status(500).send("Erro ao buscar status do pedido.");
+        } 
+        
+        if (!row) {
+            return res.status(404).send("Pedido não encontrado.");
+        }
+
+        const formattedOrderId = `${row.id}.${Math.floor(Math.random() * 900) + 100}-${Math.floor(Math.random() * 90) + 10}`;
+        res.json({
+            ...row,
+            formattedOrderId
+        });
+    });
+});
+
 // Rota para login
 app.post('/api/login', (req, res) => {
     const { email, password } = req.body;
@@ -280,7 +295,7 @@ app.post('/api/login', (req, res) => {
 // Rota para obter pedidos de um usuário
 app.get('/api/orders', (req, res) => {
     const userId = req.query.userId;
-    db.all("SELECT Orders.*, Users.name FROM Orders JOIN Users ON Orders.user_id = Users.id WHERE Orders.user_id = ?", [userId], (err, rows) => {
+    db.all("SELECT * FROM Orders WHERE user_id = ?", [userId], (err, rows) => {
         if (err) {
             res.status(500).send("Erro ao buscar pedidos.");
         } else {
@@ -293,26 +308,7 @@ app.get('/api/orders', (req, res) => {
     });
 });
 
-// Rota para obter o último pedido de um usuário
-app.get('/api/orders', (req, res) => {
-    const userId = req.query.userId;
-    db.get(
-        "SELECT Orders.*, Users.name FROM Orders JOIN Users ON Orders.user_id = Users.id WHERE Orders.user_id = ? ORDER BY Orders.id DESC LIMIT 1", 
-        [userId], 
-        (err, row) => {
-            if (err) {
-                res.status(500).send("Erro ao buscar pedido.");
-            } else if (!row) {
-                res.status(404).send("Pedido não encontrado.");
-            } else {
-                const formattedOrderId = `${row.id}.${Math.floor(Math.random() * 900) + 100}-${Math.floor(Math.random() * 90) + 10}`;
-                res.json({ ...row, formattedOrderId });
-            }
-        }
-    );
-});
-
-
 app.listen(port, () => {
     console.log(`Servidor rodando em http://localhost:${port}`);
+    console.log(`Documentação rodando em http://localhost:${port}/api-docs`);
 });
