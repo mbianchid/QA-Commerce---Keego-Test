@@ -4,17 +4,30 @@ body {
     margin: 0;
     padding: 0;
     background-color: #f5f5f5;
+    padding-top: 70px; /* Para evitar sobreposição do cabeçalho */
 }
 
 /* Estilo do cabeçalho e rodapé */
-header, footer {
+footer {
     background-color: #333;
     color: white;
     padding: 10px 0;
     text-align: center;
 }
 
-/* Navbar para incluir o contador do carrinho */
+/* Estilo do cabeçalho fixo */
+header {
+    background-color: #333;
+    padding: 10px 0;
+    text-align: center;
+    position: fixed;
+    width: 100%;
+    top: 0;
+    z-index: 1000;
+    border-bottom: 1px solid #ddd;
+}
+
+/* Navbar */
 .navbar {
     display: flex;
     justify-content: space-between;
@@ -22,18 +35,42 @@ header, footer {
     padding: 0 20px;
 }
 
-.navbar-brand {
-    font-size: 1.5rem;
+.navbar-brand img {
+    max-height: 60px;
+    margin-right: 20px; /* Espaçamento entre o logo e o menu */
 }
 
 .navbar-nav {
     display: flex;
-    gap: 15px;
+    align-items: center;
+    gap: 30px; /* Espaçamento entre os itens do menu */
+    margin-left: auto;
+}
+
+.nav-item {
+    position: relative;
+}
+
+.nav-item .nav-link {
+    font-size: 1.2rem; /* Ajuste o tamanho conforme necessário */
+    color: white;
+    transition: color 0.2s;
+    padding: 10px 0; /* Espaçamento vertical */
+}
+
+.nav-item .nav-link:hover {
+    color: #007bff;
 }
 
 .nav-item .badge {
-    font-size: 0.8rem;
-    padding: 0.5em;
+    font-size: 1rem;
+    padding: 0.3em 0.6em;
+    background-color: #35bbdc;
+    color: white;
+    border-radius: 60%;
+    position: absolute;
+    top: -14px; /* Alinhamento vertical do badge */
+    right: -10px; /* Alinhamento horizontal do badge */
 }
 
 /* Estilo do contêiner principal */
@@ -56,8 +93,15 @@ main {
     border: 1px solid #ddd;
     border-radius: 5px;
     padding: 15px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
     text-align: center;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s;
+    flex: 1 0 30%; /* Ajuste para caber 3 por linha */
+    margin: 10px; /* Espaço entre os cartões */
+}
+
+.product-card:hover {
+    transform: scale(1.05);
 }
 
 .product-card-img {
@@ -72,11 +116,14 @@ main {
 }
 
 .product-card-title {
+    font-size: 1.2rem;
     margin-bottom: 0.5rem;
+    color: #333;
 }
 
 .product-card-text {
     margin-bottom: 1rem;
+    color: #666;
 }
 
 /* Estilos para mensagens de alerta */
@@ -105,11 +152,11 @@ main {
 
 /* Estilos para campos inválidos */
 .is-invalid {
-    border-color: #dc3545; /* Vermelho para indicar erro */
+    border-color: #dc3545;
 }
 
 .is-invalid:focus {
-    box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25); /* Sombra em vermelho claro */
+    box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
 }
 
 /* Estilos para campos de formulário */
@@ -244,4 +291,112 @@ main {
 #totals .btn {
     margin-top: 10px;
     padding: 10px 20px;
+}
+
+/* Estilo para paginação */
+.pagination {
+    display: flex;
+    justify-content: center;
+    padding: 10px 0;
+}
+
+.pagination .page-link {
+    margin: 0 5px;
+    padding: 10px 15px;
+    background-color: white;
+    border: 1px solid #007bff;
+    color: #007bff;
+    text-decoration: none;
+    border-radius: 4px;
+    transition: background-color 0.2s, color 0.2s;
+}
+
+.pagination .page-link:hover {
+    background-color: #007bff;
+    color: white;
+}
+
+.pagination .page-link.active {
+    background-color: #007bff;
+    color: white;
+    border-color: #007bff;
+}
+
+.pagination .page-link.disabled {
+    color: #ccc;
+    border-color: #ccc;
+}
+
+/* Estilo para o checkout */
+form#checkout-form {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+}
+
+fieldset {
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    padding: 15px;
+    margin-bottom: 20px;
+    width: 100%;
+}
+
+fieldset.personal-info {
+    flex: 0 0 100%;
+    margin-right: 15px;
+}
+
+fieldset.payment-info {
+    flex: 0 0 100%;
+}
+
+legend {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: #007bff;
+}
+
+.d-none {
+    display: none !important;
+}
+
+#login-form {
+    padding: 20px;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Estilos para a página de login */
+#login-container {
+    max-width: 500px;
+    margin: 50px auto;
+    padding: 20px;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Estilos para a página de dashboard */
+#dashboard {
+    padding: 20px;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    margin: 50px auto;
+}
+
+#dashboard h2 {
+    color: #007bff;
+}
+
+#dashboard .order-details {
+    margin-top: 20px;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
 }

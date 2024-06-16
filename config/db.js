@@ -1,5 +1,9 @@
 const sqlite3 = require('sqlite3').verbose();
-const db = new sqlite3.Database('./qa_commerce.db', (err) => {
+const path = require('path');
+
+const dbPath = path.join(__dirname, '../src/qa_commerce.db');
+
+const db = new sqlite3.Database(dbPath, (err) => {
     if (err) {
         console.error('Erro ao conectar ao banco de dados:', err.message);
     } else {

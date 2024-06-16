@@ -2,38 +2,193 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const db = require('../config/db'); // Certifique-se de que este caminho está correto
 const bcrypt = require('bcrypt');
+const Joi = require('joi');
+const swaggerUi = require('swagger-ui-express');
+const swaggerDocument = require('../config/swagger.json');
 const app = express();
 const port = 3000;
 
 app.use(bodyParser.json());
 app.use(express.static('public')); // Servir frontend estático
 
-// Rota para listar produtos
+// Documentação Swagger
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+
+// Esquema de validação usando Joi
+const checkoutSchema = Joi.object({
+    userId: Joi.number().required(),
+    firstName: Joi.string().min(2).max(50).required(),
+    lastName: Joi.string().min(2).max(50).required(),
+    address: Joi.string().min(5).max(100).required(),
+    number: Joi.string().min(1).max(10).required(),
+    cep: Joi.string().length(8).required(),
+    phone: Joi.string().min(10).max(15).allow(''), // Telefone não obrigatório
+    email: Joi.string().email().required(),
+    paymentMethod: Joi.string().valid('credit_card', 'boleto', 'pix').required(),
+    cardNumber: Joi.string().when('paymentMethod', {
+        is: 'credit_card',
+        then: Joi.string().length(16).required(),
+        otherwise: Joi.optional()
+    }),
+    cardExpiry: Joi.string().when('paymentMethod', {
+        is: 'credit_card',
+        then: Joi.string().pattern(/^(0[1-9]|1[0-2])\/?([0-9]{4}|[0-9]{2})$/).required(),
+        otherwise: Joi.optional()
+    }),
+    cardCvc: Joi.string().when('paymentMethod', {
+        is: 'credit_card',
+        then: Joi.string().length(3).required(),
+        otherwise: Joi.optional()
+    }),
+    boletoCode: Joi.string().when('paymentMethod', {
+        is: 'boleto',
+        then: Joi.string().required(),
+        otherwise: Joi.optional()
+    }),
+    pixKey: Joi.string().when('paymentMethod', {
+        is: 'pix',
+        then: Joi.string().required(),
+        otherwise: Joi.optional()
+    }),
+    createAccount: Joi.boolean().optional(),
+    password: Joi.string().min(6).optional()
+});
+
+// Rota para listar produtos com paginação
 app.get('/api/produtos', (req, res) => {
-    db.all("SELECT * FROM Products", (err, rows) => {
+    const page = parseInt(req.query.page) || 1; // Página atual
+    const limit = parseInt(req.query.limit) || 9; // Limite de produtos por página
+    const offset = (page - 1) * limit; // Deslocamento para a consulta
+
+    db.all("SELECT * FROM Products LIMIT ? OFFSET ?", [limit, offset], (err, rows) => {
         if (err) {
             res.status(500).send("Erro ao buscar produtos.");
         } else {
-            res.json(rows);
+            db.get("SELECT COUNT(*) as total FROM Products", (err, result) => {
+                if (err) {
+                    res.status(500).send("Erro ao calcular o total de produtos.");
+                } else {
+                    const total = result.total;
+                    const totalPages = Math.ceil(total / limit);
+                    res.json({
+                        products: rows,
+                        totalPages: totalPages,
+                        currentPage: page
+                    });
+                }
+            });
         }
     });
 });
 
-// Rota para registro de usuário
+// Ajuste na rota de registro de usuário
 app.post('/api/registrar', (req, res) => {
-    const { email, password } = req.body;
+    const { name, email, password } = req.body;
     const saltRounds = 10;
 
     bcrypt.hash(password, saltRounds, (err, hashedPassword) => {
         if (err) {
             return res.status(500).send("Erro ao registrar usuário.");
         }
-        db.run("INSERT INTO Users (email, password) VALUES (?, ?)", [email, hashedPassword], function(err) {
+        db.run("INSERT INTO Users (name, email, password) VALUES (?, ?, ?)", [name, email, hashedPassword], function(err) {
             if (err) {
                 res.status(500).send("Erro ao registrar usuário.");
             } else {
                 res.status(201).send({ id: this.lastID });
             }
+        });
+    });
+});
+
+// Atualização no endpoint de checkout para salvar nome do usuário
+app.post('/api/checkout', (req, res) => {
+    const {
+        userId, firstName, lastName, address, number, cep, phone, email,
+        paymentMethod, cardNumber, cardExpiry, cardCvc, boletoCode, pixKey, createAccount, password
+    } = req.body;
+
+    // Validação com Joi
+    const { error } = checkoutSchema.validate(req.body);
+    if (error) {
+        return res.status(400).send(error.details[0].message);
+    }
+
+    const shippingFee = 19.90; // Frete fixo
+
+    db.all("SELECT Products.price, Cart.quantity FROM Cart JOIN Products ON Cart.product_id = Products.id WHERE Cart.user_id = ?", [userId], (err, rows) => {
+        if (err) {
+            return res.status(500).send("Erro ao calcular total do pedido.");
+        }
+
+        const totalPrice = rows.reduce((total, item) => total + item.price * item.quantity, 0) + shippingFee;
+
+        db.run(`
+            INSERT INTO Orders (
+                user_id, first_name, last_name, address, number, cep, phone, email,
+                payment_method, card_number, card_expiry, card_cvc, boleto_code, pix_key, total_price, status
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            [
+                userId, firstName, lastName, address, number, cep, phone, email,
+                paymentMethod, cardNumber || null, cardExpiry || null, cardCvc || null, boletoCode || null, pixKey || null, totalPrice, 'Pagamento aprovado'
+            ],
+            function(err) {
+                if (err) {
+                    return res.status(500).send("Erro ao finalizar pedido.");
+                }
+
+                if (createAccount) {
+                    const saltRounds = 10;
+                    bcrypt.hash(password, saltRounds, (err, hashedPassword) => {
+                        if (err) {
+                            return res.status(500).send("Erro ao criar conta.");
+                        }
+
+                        db.run("INSERT INTO Users (email, password, name) VALUES (?, ?, ?)", [email, hashedPassword, `${firstName} ${lastName}`], function(err) {
+                            if (err) {
+                                return res.status(500).send("Erro ao criar conta.");
+                            }
+                        });
+                    });
+                }
+
+                res.status(201).send({ id: this.lastID });
+            }
+        );
+    });
+});
+
+// Ajustar rota para obter pedidos de um usuário para incluir nome
+app.get('/api/orders', (req, res) => {
+    const userId = req.query.userId;
+    db.all("SELECT Orders.*, Users.name FROM Orders JOIN Users ON Orders.user_id = Users.id WHERE Orders.user_id = ?", [userId], (err, rows) => {
+        if (err) {
+            res.status(500).send("Erro ao buscar pedidos.");
+        } else {
+            const orders = rows.map(order => {
+                const formattedOrderId = `${order.id}.${Math.floor(Math.random() * 900) + 100}-${Math.floor(Math.random() * 90) + 10}`;
+                return { ...order, formattedOrderId };
+            });
+            res.json(orders);
+        }
+    });
+});
+
+// Rota para obter detalhes de um pedido específico
+app.get('/api/orders/:orderId', (req, res) => {
+    const orderId = req.params.orderId;
+    db.get("SELECT Orders.*, Users.name FROM Orders JOIN Users ON Orders.user_id = Users.id WHERE Orders.id = ?", [orderId], (err, row) => {
+        if (err) {
+            return res.status(500).send("Erro ao buscar status do pedido.");
+        } 
+        
+        if (!row) {
+            return res.status(404).send("Pedido não encontrado.");
+        }
+
+        const formattedOrderId = `${row.id}.${Math.floor(Math.random() * 900) + 100}-${Math.floor(Math.random() * 90) + 10}`;
+        res.json({
+            ...row,
+            formattedOrderId
         });
     });
 });
@@ -49,7 +204,6 @@ app.post('/api/limpar-carrinho', (req, res) => {
         }
     });
 });
-
 
 // Rota para adicionar produtos ao carrinho
 app.post('/api/carrinho', (req, res) => {
@@ -105,89 +259,59 @@ app.delete('/api/carrinho/:userId/:productId', (req, res) => {
     });
 });
 
-// Rota para finalizar o pedido
-app.post('/api/checkout', (req, res) => {
-    const {
-        userId, firstName, lastName, address, number, cep, phone, email,
-        paymentMethod, cardNumber, cardExpiry, cardCvc, boletoCode, pixKey, createAccount, password
-    } = req.body;
-
-    const shippingFee = 19.90; // Frete fixo
-    db.all("SELECT Products.price, Cart.quantity FROM Cart JOIN Products ON Cart.product_id = Products.id WHERE Cart.user_id = ?", [userId], (err, rows) => {
-        if (err) {
-            return res.status(500).send("Erro ao calcular total do pedido.");
+// Rota para login
+app.post('/api/login', (req, res) => {
+    const { email, password } = req.body;
+    db.get("SELECT * FROM Users WHERE email = ?", [email], (err, user) => {
+        if (err || !user) {
+            return res.status(401).send({ error: "Email ou senha incorretos." });
         }
-        
-        const totalPrice = rows.reduce((total, item) => total + item.price * item.quantity, 0) + shippingFee;
 
-        db.run(`
-            INSERT INTO Orders (
-                user_id, first_name, last_name, address, number, cep, phone, email,
-                payment_method, card_number, card_expiry, card_cvc, boleto_code, pix_key, total_price, status
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-            [
-                userId, firstName, lastName, address, number, cep, phone, email,
-                paymentMethod, cardNumber || null, cardExpiry || null, cardCvc || null, boletoCode || null, pixKey || null, totalPrice, 'Pagamento aprovado'
-            ],
-            function(err) {
-                if (err) {
-                    return res.status(500).send("Erro ao finalizar pedido.");
-                }
-
-                if (createAccount) {
-                    const saltRounds = 10;
-                    bcrypt.hash(password, saltRounds, (err, hashedPassword) => {
-                        if (err) {
-                            return res.status(500).send("Erro ao criar conta.");
-                        }
-
-                        db.run("INSERT INTO Users (email, password) VALUES (?, ?)", [email, hashedPassword], function(err) {
-                            if (err) {
-                                return res.status(500).send("Erro ao criar conta.");
-                            }
-                        });
-                    });
-                }
-
-                res.status(201).send({ id: this.lastID });
+        bcrypt.compare(password, user.password, (err, result) => {
+            if (err || !result) {
+                return res.status(401).send({ error: "Email ou senha incorretos." });
             }
-        );
-    });
-});
 
-// Rota para obter detalhes de um produto específico
-app.get('/api/produtos/:id', (req, res) => {
-    const productId = req.params.id;
-    db.get("SELECT * FROM Products WHERE id = ?", [productId], (err, row) => {
-        if (err) {
-            res.status(500).send("Erro ao buscar detalhes do produto.");
-        } else if (!row) {
-            res.status(404).send("Produto não encontrado.");
-        } else {
-            res.json(row);
-        }
-    });
-});
-
-// Rota para obter status do pedido
-app.get('/api/orders/:orderId', (req, res) => {
-    const orderId = req.params.orderId;
-    db.get("SELECT * FROM Orders WHERE id = ?", [orderId], (err, row) => {
-        if (err) {
-            return res.status(500).send("Erro ao buscar status do pedido.");
-        } 
-        
-        if (!row) {
-            return res.status(404).send("Pedido não encontrado.");
-        }
-
-        const formattedOrderId = `${row.id}.${Math.floor(Math.random() * 900) + 100}-${Math.floor(Math.random() * 90) + 10}`;
-        res.json({
-            ...row,
-            formattedOrderId
+            res.json({ id: user.id, name: user.name });
         });
     });
 });
+
+// Rota para obter pedidos de um usuário
+app.get('/api/orders', (req, res) => {
+    const userId = req.query.userId;
+    db.all("SELECT Orders.*, Users.name FROM Orders JOIN Users ON Orders.user_id = Users.id WHERE Orders.user_id = ?", [userId], (err, rows) => {
+        if (err) {
+            res.status(500).send("Erro ao buscar pedidos.");
+        } else {
+            const orders = rows.map(order => {
+                const formattedOrderId = `${order.id}.${Math.floor(Math.random() * 900) + 100}-${Math.floor(Math.random() * 90) + 10}`;
+                return { ...order, formattedOrderId };
+            });
+            res.json(orders);
+        }
+    });
+});
+
+// Rota para obter o último pedido de um usuário
+app.get('/api/orders', (req, res) => {
+    const userId = req.query.userId;
+    db.get(
+        "SELECT Orders.*, Users.name FROM Orders JOIN Users ON Orders.user_id = Users.id WHERE Orders.user_id = ? ORDER BY Orders.id DESC LIMIT 1", 
+        [userId], 
+        (err, row) => {
+            if (err) {
+                res.status(500).send("Erro ao buscar pedido.");
+            } else if (!row) {
+                res.status(404).send("Pedido não encontrado.");
+            } else {
+                const formattedOrderId = `${row.id}.${Math.floor(Math.random() * 900) + 100}-${Math.floor(Math.random() * 90) + 10}`;
+                res.json({ ...row, formattedOrderId });
+            }
+        }
+    );
+});
+
 
 app.listen(port, () => {
     console.log(`Servidor rodando em http://localhost:${port}`);

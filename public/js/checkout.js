@@ -18,12 +18,6 @@ document.addEventListener('DOMContentLoaded', function() {
         return '23793.38128 60082.677139 66003.996498 1 89440000010000';
     }
 
-    // Função para exibir alertas
-    function showAlert(message) {
-        alertContainer.classList.remove('d-none');
-        alertContainer.innerHTML = `<p>${message}</p>`;
-    }
-
     // Função para gerar uma chave e QR code Pix falso
     function generatePixDetails() {
         return {
@@ -86,6 +80,22 @@ document.addEventListener('DOMContentLoaded', function() {
 
         let hasErrors = false;
 
+        // Verificar campos obrigatórios
+        requiredFields.forEach(fieldId => {
+            const field = document.getElementById(fieldId);
+            if (!field.value.trim()) {
+                hasErrors = true;
+                field.classList.add('is-invalid');
+            } else {
+                field.classList.remove('is-invalid');
+            }
+        });
+
+        if (hasErrors) {
+            showAlert('Por favor, preencha todos os campos marcados com asteriscos.');
+            return;
+        }
+
         // Validação de email
         const emailField = document.getElementById('email');
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -97,16 +107,25 @@ document.addEventListener('DOMContentLoaded', function() {
             emailField.classList.remove('is-invalid');
         }
 
-        // Verificar campos obrigatórios
-        requiredFields.forEach(fieldId => {
-            const field = document.getElementById(fieldId);
-            if (!field.value.trim()) {
-                hasErrors = true;
-                field.classList.add('is-invalid');
-            } else {
-                field.classList.remove('is-invalid');
-            }
-        });
+        // Validação de telefone
+        const phoneField = document.getElementById('phone');
+        if (phoneField.value && phoneField.value.length < 10) {
+            hasErrors = true;
+            showAlert('O telefone deve ter pelo menos 10 caracteres.');
+            phoneField.classList.add('is-invalid');
+        } else {
+            phoneField.classList.remove('is-invalid');
+        }
+
+        // Validação de CEP
+        const cepField = document.getElementById('cep');
+        if (cepField.value.length !== 8) {
+            hasErrors = true;
+            showAlert('O CEP deve ter 8 caracteres.');
+            cepField.classList.add('is-invalid');
+        } else {
+            cepField.classList.remove('is-invalid');
+        }
 
         if (createAccountCheckbox.checked) {
             const password = document.getElementById('password').value;
@@ -159,9 +178,8 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
 
+        // Se não houver erros, processar o formulário
         const userId = 1; // Supondo um usuário com id 1
-        const totalPrice = 60 + 19.90; // Calcular o preço total baseado nos produtos do carrinho e frete
-
         const formData = {
             userId: userId,
             firstName: document.getElementById('first-name').value,
@@ -172,8 +190,7 @@ document.addEventListener('DOMContentLoaded', function() {
             phone: document.getElementById('phone').value,
             email: document.getElementById('email').value,
             paymentMethod: document.querySelector('input[name="payment-method"]:checked').value,
-            totalPrice: totalPrice,
-            createAccount: createAccountCheckbox.checked
+            createAccount: createAccountCheckbox.checked,
         };
 
         if (formData.createAccount) {
@@ -204,9 +221,21 @@ document.addEventListener('DOMContentLoaded', function() {
             return response.json();
         })
         .then(data => {
+            // Armazenar no sessionStorage ao criar uma conta
+            if (createAccountCheckbox.checked) {
+                sessionStorage.setItem('user', JSON.stringify({ id: userId, name: `${formData.firstName} ${formData.lastName}` }));
+            }
+
             // Redirecionar para a página de status do pedido
             window.location.href = `/status.html?orderId=${data.id}`;
         })
         .catch(error => console.error('Erro ao finalizar pedido:', error));
     });
+
+    // Função para exibir alertas
+    function showAlert(message) {
+        alertContainer.classList.remove('d-none');
+        alertContainer.innerHTML = `<p>${message}</p>`;
+        window.scrollTo(0, 0); // Rolagem para o topo ao exibir alertas
+    }
 });

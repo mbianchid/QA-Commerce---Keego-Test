@@ -1,0 +1,108 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "QA-Commerce API",
+        "version": "1.0.0",
+        "description": "Documentação da API para o sistema QACommerce"
+    },
+    "paths": {
+        "/api/checkout": {
+            "post": {
+                "summary": "Finalizar pedido",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/CheckoutRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "201": {
+                        "description": "Pedido finalizado com sucesso"
+                    },
+                    "400": {
+                        "description": "Erro de validação"
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "CheckoutRequest": {
+                "type": "object",
+                "properties": {
+                    "userId": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "firstName": {
+                        "type": "string",
+                        "example": "John"
+                    },
+                    "lastName": {
+                        "type": "string",
+                        "example": "Doe"
+                    },
+                    "address": {
+                        "type": "string",
+                        "example": "123 Main St"
+                    },
+                    "number": {
+                        "type": "string",
+                        "example": "123"
+                    },
+                    "cep": {
+                        "type": "string",
+                        "example": "12345-678"
+                    },
+                    "phone": {
+                        "type": "string",
+                        "example": "+1234567890"
+                    },
+                    "email": {
+                        "type": "string",
+                        "example": "email@example.com"
+                    },
+                    "paymentMethod": {
+                        "type": "string",
+                        "enum": ["credit_card", "boleto", "pix"],
+                        "example": "credit_card"
+                    },
+                    "cardNumber": {
+                        "type": "string",
+                        "example": "4111111111111111"
+                    },
+                    "cardExpiry": {
+                        "type": "string",
+                        "example": "12/23"
+                    },
+                    "cardCvc": {
+                        "type": "string",
+                        "example": "123"
+                    },
+                    "boletoCode": {
+                        "type": "string",
+                        "example": "237938238423842384"
+                    },
+                    "pixKey": {
+                        "type": "string",
+                        "example": "email@example.com"
+                    },
+                    "createAccount": {
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "password": {
+                        "type": "string",
+                        "example": "password123"
+                    }
+                },
+                "required": ["userId", "firstName", "lastName", "address", "number", "cep", "phone", "email", "paymentMethod"]
+            }
+        }
+    }
+}
