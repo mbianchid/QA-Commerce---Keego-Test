@@ -1,108 +1,451 @@
 {
-    "openapi": "3.0.0",
+    "swagger": "2.0",
     "info": {
-        "title": "QA-Commerce API",
-        "version": "1.0.0",
-        "description": "Documentação da API para o sistema QACommerce"
+      "title": "QA-Commerce API",
+      "version": "1.0.0",
+      "description": "API para a aplicação QA-Commerce, que gerencia produtos, carrinho de compras, pedidos e usuários."
     },
+    "host": "localhost:3000",
+    "basePath": "/api",
+    "schemes": ["http"],
     "paths": {
-        "/api/checkout": {
-            "post": {
-                "summary": "Finalizar pedido",
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/CheckoutRequest"
-                            }
-                        }
-                    },
-                    "required": true
-                },
-                "responses": {
-                    "201": {
-                        "description": "Pedido finalizado com sucesso"
-                    },
-                    "400": {
-                        "description": "Erro de validação"
-                    }
-                }
+      "/login": {
+        "post": {
+          "summary": "Login de usuário",
+          "description": "Autentica o usuário e retorna seu ID e nome.",
+          "parameters": [
+            {
+              "name": "body",
+              "in": "body",
+              "required": true,
+              "schema": {
+                "$ref": "#/definitions/LoginRequest"
+              }
             }
+          ],
+          "responses": {
+            "200": {
+              "description": "Login bem-sucedido",
+              "schema": {
+                "$ref": "#/definitions/LoginResponse"
+              }
+            },
+            "401": {
+              "description": "Email ou senha incorretos"
+            }
+          }
         }
+      },
+      "/carrinho": {
+        "post": {
+          "summary": "Adicionar produto ao carrinho",
+          "description": "Adiciona um produto ao carrinho do usuário.",
+          "parameters": [
+            {
+              "name": "body",
+              "in": "body",
+              "required": true,
+              "schema": {
+                "$ref": "#/definitions/CarrinhoRequest"
+              }
+            }
+          ],
+          "responses": {
+            "201": {
+              "description": "Produto adicionado ao carrinho com sucesso",
+              "schema": {
+                "$ref": "#/definitions/CarrinhoResponse"
+              }
+            },
+            "500": {
+              "description": "Erro ao adicionar produto ao carrinho"
+            }
+          }
+        }
+      },
+      "/checkout": {
+        "post": {
+          "summary": "Finalizar pedido",
+          "description": "Finaliza o pedido com base nos dados fornecidos e retorna o número do pedido.",
+          "parameters": [
+            {
+              "name": "body",
+              "in": "body",
+              "required": true,
+              "schema": {
+                "$ref": "#/definitions/CheckoutRequest"
+              }
+            }
+          ],
+          "responses": {
+            "201": {
+              "description": "Pedido finalizado com sucesso",
+              "schema": {
+                "$ref": "#/definitions/CheckoutResponse"
+              }
+            },
+            "400": {
+              "description": "Erro de validação nos dados fornecidos"
+            },
+            "500": {
+              "description": "Erro ao finalizar pedido"
+            }
+          }
+        }
+      },
+      "/produtos": {
+        "get": {
+          "summary": "Listar produtos",
+          "description": "Retorna uma lista de produtos com suporte a paginação.",
+          "parameters": [
+            {
+              "name": "page",
+              "in": "query",
+              "type": "integer",
+              "description": "Número da página"
+            },
+            {
+              "name": "limit",
+              "in": "query",
+              "type": "integer",
+              "description": "Número de produtos por página"
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Lista de produtos",
+              "schema": {
+                "$ref": "#/definitions/ProdutosResponse"
+              }
+            },
+            "500": {
+              "description": "Erro ao buscar produtos"
+            }
+          }
+        }
+      },
+      "/produtos/{id}": {
+        "get": {
+          "summary": "Obter detalhes de um produto",
+          "description": "Retorna os detalhes de um produto específico.",
+          "parameters": [
+            {
+              "name": "id",
+              "in": "path",
+              "required": true,
+              "type": "integer",
+              "description": "ID do produto"
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Detalhes do produto",
+              "schema": {
+                "$ref": "#/definitions/ProdutoResponse"
+              }
+            },
+            "404": {
+              "description": "Produto não encontrado"
+            },
+            "500": {
+              "description": "Erro ao buscar detalhes do produto"
+            }
+          }
+        }
+      },
+      "/orders": {
+        "get": {
+          "summary": "Listar pedidos do usuário",
+          "description": "Retorna uma lista de pedidos de um usuário específico.",
+          "parameters": [
+            {
+              "name": "userId",
+              "in": "query",
+              "type": "integer",
+              "required": true,
+              "description": "ID do usuário"
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Lista de pedidos",
+              "schema": {
+                "$ref": "#/definitions/OrdersResponse"
+              }
+            },
+            "500": {
+              "description": "Erro ao buscar pedidos"
+            }
+          }
+        }
+      }
     },
-    "components": {
-        "schemas": {
-            "CheckoutRequest": {
-                "type": "object",
-                "properties": {
-                    "userId": {
-                        "type": "integer",
-                        "example": 1
-                    },
-                    "firstName": {
-                        "type": "string",
-                        "example": "John"
-                    },
-                    "lastName": {
-                        "type": "string",
-                        "example": "Doe"
-                    },
-                    "address": {
-                        "type": "string",
-                        "example": "123 Main St"
-                    },
-                    "number": {
-                        "type": "string",
-                        "example": "123"
-                    },
-                    "cep": {
-                        "type": "string",
-                        "example": "12345-678"
-                    },
-                    "phone": {
-                        "type": "string",
-                        "example": "+1234567890"
-                    },
-                    "email": {
-                        "type": "string",
-                        "example": "email@example.com"
-                    },
-                    "paymentMethod": {
-                        "type": "string",
-                        "enum": ["credit_card", "boleto", "pix"],
-                        "example": "credit_card"
-                    },
-                    "cardNumber": {
-                        "type": "string",
-                        "example": "4111111111111111"
-                    },
-                    "cardExpiry": {
-                        "type": "string",
-                        "example": "12/23"
-                    },
-                    "cardCvc": {
-                        "type": "string",
-                        "example": "123"
-                    },
-                    "boletoCode": {
-                        "type": "string",
-                        "example": "237938238423842384"
-                    },
-                    "pixKey": {
-                        "type": "string",
-                        "example": "email@example.com"
-                    },
-                    "createAccount": {
-                        "type": "boolean",
-                        "example": true
-                    },
-                    "password": {
-                        "type": "string",
-                        "example": "password123"
-                    }
-                },
-                "required": ["userId", "firstName", "lastName", "address", "number", "cep", "phone", "email", "paymentMethod"]
-            }
+    "definitions": {
+      "LoginRequest": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "example": "usuario@exemplo.com"
+          },
+          "password": {
+            "type": "string",
+            "example": "senha123"
+          }
+        },
+        "required": ["email", "password"]
+      },
+      "LoginResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "example": 1
+          },
+          "name": {
+            "type": "string",
+            "example": "John Doe"
+          }
         }
+      },
+      "CarrinhoRequest": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "integer",
+            "example": 1
+          },
+          "productId": {
+            "type": "integer",
+            "example": 101
+          },
+          "quantity": {
+            "type": "integer",
+            "example": 2
+          }
+        },
+        "required": ["userId", "productId", "quantity"]
+      },
+      "CarrinhoResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "example": 123
+          },
+          "message": {
+            "type": "string",
+            "example": "Produto adicionado ao carrinho."
+          }
+        }
+      },
+      "CheckoutRequest": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "integer",
+            "example": 1
+          },
+          "firstName": {
+            "type": "string",
+            "example": "John"
+          },
+          "lastName": {
+            "type": "string",
+            "example": "Doe"
+          },
+          "address": {
+            "type": "string",
+            "example": "123 Main St"
+          },
+          "number": {
+            "type": "string",
+            "example": "456"
+          },
+          "cep": {
+            "type": "string",
+            "example": "12345678"
+          },
+          "phone": {
+            "type": "string",
+            "example": "1234567890"
+          },
+          "email": {
+            "type": "string",
+            "example": "john.doe@example.com"
+          },
+          "paymentMethod": {
+            "type": "string",
+            "example": "credit_card"
+          },
+          "cardNumber": {
+            "type": "string",
+            "example": "1234123412341234"
+          },
+          "cardExpiry": {
+            "type": "string",
+            "example": "12/2025"
+          },
+          "cardCvc": {
+            "type": "string",
+            "example": "123"
+          },
+          "boletoCode": {
+            "type": "string",
+            "example": "23793.38128 60082.677139 66003.996498 1 89440000010000"
+          },
+          "pixKey": {
+            "type": "string",
+            "example": "123e4567-e89b-12d3-a456-426614174000"
+          },
+          "createAccount": {
+            "type": "boolean",
+            "example": false
+          },
+          "password": {
+            "type": "string",
+            "example": "Password123!"
+          }
+        },
+        "required": ["firstName", "lastName", "address", "number", "cep", "email", "paymentMethod"]
+      },
+      "CheckoutResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "example": 456
+          },
+          "orderNumber": {
+            "type": "string",
+            "example": "456-1234"
+          }
+        }
+      },
+      "ProdutosResponse": {
+        "type": "object",
+        "properties": {
+          "products": {
+            "type": "array",
+            "items": {
+              "$ref": "#/definitions/Produto"
+            }
+          },
+          "totalPages": {
+            "type": "integer",
+            "example": 10
+          },
+          "currentPage": {
+            "type": "integer",
+            "example": 1
+          }
+        }
+      },
+      "ProdutoResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "example": 101
+          },
+          "name": {
+            "type": "string",
+            "example": "Produto Exemplo"
+          },
+          "price": {
+            "type": "number",
+            "example": 199.99
+          },
+          "description": {
+            "type": "string",
+            "example": "Descrição do produto exemplo."
+          }
+        }
+      },
+      "Produto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "example": 101
+          },
+          "name": {
+            "type": "string",
+            "example": "Produto Exemplo"
+          },
+          "price": {
+            "type": "number",
+            "example": 199.99
+          },
+          "description": {
+            "type": "string",
+            "example": "Descrição do produto exemplo."
+          }
+        }
+      },
+      "OrdersResponse": {
+        "type": "array",
+        "items": {
+          "$ref": "#/definitions/Order"
+        }
+      },
+      "Order": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "example": 123
+          },
+          "userId": {
+            "type": "integer",
+            "example": 1
+          },
+          "firstName": {
+            "type": "string",
+            "example": "John"
+          },
+          "lastName": {
+            "type": "string",
+            "example": "Doe"
+          },
+          "address": {
+            "type": "string",
+            "example": "123 Main St"
+          },
+          "number": {
+            "type": "string",
+            "example": "456"
+          },
+          "cep": {
+            "type": "string",
+            "example": "12345678"
+          },
+          "phone": {
+            "type": "string",
+            "example": "1234567890"
+          },
+          "email": {
+            "type": "string",
+            "example": "john.doe@example.com"
+          },
+          "paymentMethod": {
+            "type": "string",
+            "example": "credit_card"
+          },
+          "totalPrice": {
+            "type": "number",
+            "example": 219.89
+          },
+          "status": {
+            "type": "string",
+            "example": "Pagamento aprovado"
+          },
+          "orderNumber": {
+            "type": "string",
+            "example": "123-5678"
+          }
+        }
+      }
     }
-}
+  }
+  
