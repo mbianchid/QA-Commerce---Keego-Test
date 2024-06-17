@@ -1,3 +1,4 @@
+//import { updateCartCount } from './cart-count.js';
 document.addEventListener('DOMContentLoaded', function() {
     fetch('/header.html')
         .then(response => response.text())
@@ -23,3 +24,15 @@ document.addEventListener('DOMContentLoaded', function() {
         window.location.href = '/login.html';
     }
 });
+
+// Função para atualizar o contador do carrinho
+function updateCartCount(userId) {
+    fetch(`/api/carrinho/${userId}`)
+        .then(response => response.json())
+        .then(cartItems => {
+            const cartCount = cartItems.reduce((total, item) => total + item.quantity, 0);
+            document.getElementById('cart-count').textContent = cartCount;
+        })
+        .catch(error => console.error('Erro ao atualizar o contador do carrinho:', error));
+}
+

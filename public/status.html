@@ -30,7 +30,7 @@
                     const orderStatus = document.getElementById('order-status');
                     if (order.id) {
                         orderStatus.innerHTML = `
-                            <h4>Obrigado pelo seu pedido, ${order.first_name}.</h4>
+                            <h4>Obrigado pelo seu pedido ${order.first_name}.</h4>
                             <p>ID do Pedido: <strong>${order.formattedOrderId}</strong></p>
                             <p>Total: <strong>R$${order.total_price.toFixed(2)}</strong></p>
                             <p>Status: <strong>${order.status}</strong></p>
