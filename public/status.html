@@ -10,10 +10,12 @@
 <body>
     <header id="header"></header>
     <div id="app">
+        <br><br>
+        <h1>STATUS DO PEDIDO</h1>
         <main class="container mt-5">
             <div id="order-status" class="text-center"></div>
         </main>
-        <footer class="mt-5">
+        <footer class="mt-5 py-3">
             <p class="text-center">&copy; 2024 QA-Commerce</p>
         </footer>
     </div>
@@ -28,8 +30,7 @@
                     const orderStatus = document.getElementById('order-status');
                     if (order.id) {
                         orderStatus.innerHTML = `
-                            <h2>Status do Pedido</h2>
-                            <p>Obrigado pelo seu pedido, ${order.first_name}.</p>
+                            <h4>Obrigado pelo seu pedido, ${order.first_name}.</h4>
                             <p>ID do Pedido: <strong>${order.formattedOrderId}</strong></p>
                             <p>Total: <strong>R$${order.total_price.toFixed(2)}</strong></p>
                             <p>Status: <strong>${order.status}</strong></p>

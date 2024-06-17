@@ -67,6 +67,7 @@ db.serialize(() => {
             pix_key TEXT,
             total_price REAL,
             status TEXT,
+            order_number TEXT,
             FOREIGN KEY(user_id) REFERENCES Users(id)
         )
     `);

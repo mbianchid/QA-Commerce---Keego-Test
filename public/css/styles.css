@@ -5,6 +5,9 @@ body {
     padding: 0;
     background-color: #f5f5f5;
     padding-top: 70px; /* Para evitar sobreposição do cabeçalho */
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh; /* Garante que o body ocupe toda a altura da viewport */
 }
 
 /* Estilo do cabeçalho e rodapé */
@@ -13,6 +16,7 @@ footer {
     color: white;
     padding: 10px 0;
     text-align: center;
+    flex-shrink: 0; /* Impede que o footer encolha */
 }
 
 /* Estilo do cabeçalho fixo */
@@ -74,10 +78,17 @@ header {
 }
 
 /* Estilo do contêiner principal */
+#app {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+
 main {
     padding: 20px;
     background-color: white;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    flex: 1; /* Permite que o main cresça para preencher o espaço restante */
 }
 
 /* Estilo para a lista de produtos */
@@ -394,9 +405,43 @@ legend {
     color: #007bff;
 }
 
+h1 {
+    text-transform: uppercase;
+    text-align: center; /* Centraliza o texto */
+    font-size: 2.5rem; /* Ajuste o tamanho da fonte conforme necessário */
+    font-weight: 700; /* Deixa o texto em negrito */
+    letter-spacing: 0.1em; /* Adiciona espaçamento entre as letras */
+    margin-top: 20px; /* Espaço acima do título */
+    margin-bottom: 20px; /* Espaço abaixo do título */
+}
+
+h4 {
+    text-transform: uppercase;
+    text-align: center; /* Centraliza o texto */
+    font-size: 2.5rem; /* Ajuste o tamanho da fonte conforme necessário */
+    font-weight: 700; /* Deixa o texto em negrito */
+    letter-spacing: 0.1em; /* Adiciona espaçamento entre as letras */
+    margin-top: 20px; /* Espaço acima do título */
+    margin-bottom: 20px; /* Espaço abaixo do título */
+}
+
+h5 {
+    text-transform: uppercase;
+    text-align: center; /* Centraliza o texto */
+    font-weight: 700; /* Deixa o texto em negrito */
+    letter-spacing: 0.1em; /* Adiciona espaçamento entre as letras */
+    margin-top: 20px; /* Espaço acima do título */
+    margin-bottom: 20px; /* Espaço abaixo do título */
+}
+
 #dashboard .order-details {
     margin-top: 20px;
     padding: 10px;
     border: 1px solid #ddd;
     border-radius: 5px;
+}
+
+.container {
+    max-width: 400px;
+    margin-top: 50px;
 }

@@ -1,4 +1,4 @@
-document.addEventListener('DOMContentLoaded', function () {
+document.addEventListener('DOMContentLoaded', function() {
     fetch('/header.html')
         .then(response => response.text())
         .then(data => {
@@ -8,14 +8,13 @@ document.addEventListener('DOMContentLoaded', function () {
         });
 
     function checkLoginStatus() {
-        const user = JSON.parse(sessionStorage.getItem('user'));
+        const user = sessionStorage.getItem('user');
+        const accountLink = document.getElementById('account-link');
+
         if (user) {
-            document.getElementById('login-link').classList.add('d-none');
-            const logoutLink = document.createElement('li');
-            logoutLink.className = 'nav-item';
-            logoutLink.innerHTML = `<a class="nav-link" href="#" id="logout-link">LOGOUT</a>`;
-            document.querySelector('.navbar-nav').appendChild(logoutLink);
-            logoutLink.addEventListener('click', logout);
+            accountLink.href = '/dashboard.html';
+        } else {
+            accountLink.href = '/login.html';
         }
     }
 
