@@ -96,6 +96,7 @@ main {
     display: flex;
     flex-wrap: wrap;
     gap: 20px;
+    justify-content: center
 }
 
 /* Estilos para os cards de produto */
@@ -103,12 +104,12 @@ main {
     background: white;
     border: 1px solid #ddd;
     border-radius: 5px;
-    padding: 15px;
+    padding: 10px;
     text-align: center;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
     transition: transform 0.2s;
-    flex: 1 0 30%; /* Ajuste para caber 3 por linha */
-    margin: 10px; /* Espaço entre os cartões */
+    flex: 1 0 40%; /* Ajuste para caber 3 por linha */
+    margin: 5px; /* Espaço entre os cartões */
 }
 
 .product-card:hover {
@@ -247,6 +248,10 @@ main {
     }
 }
 
+.col-md-4 {
+    width: 30%;
+}
+
 #product-description {
     margin-top: 15px;
     font-size: 1rem;
@@ -255,7 +260,7 @@ main {
 
 #product-price {
     font-size: 1.5rem;
-    color: #28a745;
+    color: #000000;
     margin-top: 10px;
 }
 
@@ -416,7 +421,7 @@ h1 {
 }
 
 h4 {
-    text-transform: uppercase;
+    /* text-transform: uppercase; */
     text-align: center; /* Centraliza o texto */
     font-size: 2.5rem; /* Ajuste o tamanho da fonte conforme necessário */
     font-weight: 700; /* Deixa o texto em negrito */
@@ -426,7 +431,7 @@ h4 {
 }
 
 h5 {
-    text-transform: uppercase;
+    /* text-transform: uppercase; */
     text-align: center; /* Centraliza o texto */
     font-weight: 700; /* Deixa o texto em negrito */
     letter-spacing: 0.1em; /* Adiciona espaçamento entre as letras */
