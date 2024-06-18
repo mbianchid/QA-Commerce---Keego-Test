@@ -271,10 +271,10 @@ main {
 }
 
 #product-price {
-    font-size: 1.5rem;
     color: #000000;
     margin-top: 10px;
-}
+    font-weight: bold;
+    }
 
 #product-quantity {
     width: 100px;
@@ -469,4 +469,13 @@ h5 {
 .container {
     max-width: 400px;
     margin-top: 50px;
+}
+
+.account-message {
+    background-color: #fff3cd;
+    border: 1px solid #ffeeba;
+    padding: 10px;
+    margin-top: 20px;
+    color: #856404;
+    border-radius: 4px;
 }

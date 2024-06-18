@@ -120,11 +120,13 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         if (hasErrors) {
-            showAlert('Por favor, corrija os erros antes de continuar.');
+            showAlert('Por favor, preencha todos os campos obrigatório marcados com asteriscos!');
             return;
         }
 
+        const userId = 1; // Ou obtenha o ID do usuário logado de um estado global ou do localStorage
         const formData = {
+            userId: userId,
             firstName: document.getElementById('first-name').value,
             lastName: document.getElementById('last-name').value,
             address: document.getElementById('address').value,
@@ -190,3 +192,51 @@ document.addEventListener('DOMContentLoaded', function () {
         alertContainer.classList.add('d-none');
     }
 });
+
+document.addEventListener("DOMContentLoaded", function () {
+    const checkoutForm = document.getElementById("checkout-form");
+  
+    checkoutForm.addEventListener("submit", function (event) {
+      event.preventDefault();
+  
+      const userId = localStorage.getItem("userId") || null; // Recupera o userId do armazenamento local
+      const formData = new FormData(checkoutForm);
+  
+      const requestBody = {
+        userId: userId ? parseInt(userId, 10) : null, // Converte para número ou usa null
+        firstName: formData.get("firstName"),
+        lastName: formData.get("lastName"),
+        address: formData.get("address"),
+        number: formData.get("number"),
+        cep: formData.get("cep"),
+        phone: formData.get("phone"),
+        email: formData.get("email"),
+        paymentMethod: formData.get("paymentMethod"),
+        cardNumber: formData.get("cardNumber"),
+        cardExpiry: formData.get("cardExpiry"),
+        cardCvc: formData.get("cardCvc"),
+        boletoCode: formData.get("boletoCode"),
+        pixKey: formData.get("pixKey"),
+        createAccount: formData.get("createAccount") === "on",
+        password: formData.get("password"),
+      };
+  
+      fetch("/api/checkout", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(requestBody),
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          if (data.error) {
+            alert(data.error);
+          } else {
+            window.location.href = `/status.html?orderId=${data.id}`;
+          }
+        })
+        .catch((error) => console.error("Erro ao finalizar compra:", error));
+    });
+  });
+  

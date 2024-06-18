@@ -5,10 +5,11 @@ const bcrypt = require("bcrypt");
 const Joi = require("joi");
 const swaggerUi = require("swagger-ui-express");
 const swaggerDocument = require("../config/swagger.json");
-const path = require("path"); // Adicionado para servir arquivos estáticos
+const path = require("path");
 const app = express();
 const port = 3000;
 
+// Middleware
 app.use(bodyParser.json());
 app.use(express.static("public")); // Servir frontend estático
 
@@ -112,7 +113,8 @@ app.post("/api/registrar", (req, res) => {
   });
 });
 
-app.post("/api/checkout", (req, res) => {
+// Rota de checkout
+/* app.post("/api/checkout", (req, res) => {
   const {
     userId,
     firstName,
@@ -140,25 +142,25 @@ app.post("/api/checkout", (req, res) => {
 
   const shippingFee = 19.9; // Frete fixo
 
-  // Se o createAccount estiver marcado, verificar se o e-mail já está registrado
+  // Verificar se o e-mail já está registrado antes de criar a conta
   if (createAccount) {
     db.get("SELECT * FROM Users WHERE email = ?", [email], (err, user) => {
       if (err) {
         return res.status(500).send("Erro ao verificar e-mail.");
       }
       if (user) {
-        return res.status(400).send("E-mail já registrado. Tente um email diferente");
+        return res.status(400).send("E-mail já registrado. Tente um email diferente.");
       }
 
-      // Prossiga com a criação do pedido
-      processOrder();
+      // Prossiga com a criação do pedido e da conta
+      createOrder(userId);
     });
   } else {
-    // Prossiga com a criação do pedido se não estiver criando conta
-    processOrder();
+    // Prossiga com a criação do pedido sem criar conta
+    createOrder(userId);
   }
 
-  function processOrder() {
+  function createOrder(userId) {
     const query = `
       SELECT Products.price, Cart.quantity FROM Cart 
       JOIN Products ON Cart.product_id = Products.id 
@@ -215,27 +217,174 @@ app.post("/api/checkout", (req, res) => {
                 return res.status(500).send("Erro ao atualizar número do pedido.");
               }
 
-              if (createAccount) {
-                const saltRounds = 10;
-                bcrypt.hash(password, saltRounds, (err, hashedPassword) => {
-                  if (err) {
-                    return res.status(500).send("Erro ao criar conta.");
-                  }
+              // Limpar o carrinho após a conclusão do pedido
+              db.run("DELETE FROM Cart WHERE user_id = ?", [userId], function (err) {
+                if (err) {
+                  return res.status(500).send("Erro ao limpar o carrinho.");
+                }
 
-                  db.run(
-                    "INSERT INTO Users (email, password, name) VALUES (?, ?, ?)",
-                    [email, hashedPassword, `${firstName} ${lastName}`],
-                    function (err) {
-                      if (err) {
-                        return res.status(500).send("Erro ao criar conta.");
-                      }
-                      res.status(201).send({ id: orderId, orderNumber });
+                if (createAccount) {
+                  const saltRounds = 10;
+                  bcrypt.hash(password, saltRounds, (err, hashedPassword) => {
+                    if (err) {
+                      return res.status(500).send("Erro ao criar conta.");
                     }
-                  );
-                });
-              } else {
-                res.status(201).send({ id: orderId, orderNumber });
+
+                    db.run(
+                      "INSERT INTO Users (email, password, name) VALUES (?, ?, ?)",
+                      [email, hashedPassword, `${firstName} ${lastName}`],
+                      function (err) {
+                        if (err) {
+                          return res.status(500).send("Erro ao criar conta.");
+                        }
+                        res.status(201).send({ id: orderId, orderNumber });
+                      }
+                    );
+                  });
+                } else {
+                  res.status(201).send({ id: orderId, orderNumber });
+                }
+              });
+            }
+          );
+        }
+      );
+    });
+  }
+}); */
+
+app.post("/api/checkout", (req, res) => {
+  const {
+    userId,
+    firstName,
+    lastName,
+    address,
+    number,
+    cep,
+    phone,
+    email,
+    paymentMethod,
+    cardNumber,
+    cardExpiry,
+    cardCvc,
+    boletoCode,
+    pixKey,
+    createAccount,
+    password,
+  } = req.body;
+
+  // Validação com Joi
+  const { error } = checkoutSchema.validate(req.body);
+  if (error) {
+    return res.status(400).send(error.details[0].message);
+  }
+
+  const shippingFee = 19.9; // Frete fixo
+
+  if (createAccount) {
+    // Verificar se o e-mail já está registrado
+    db.get("SELECT * FROM Users WHERE email = ?", [email], (err, user) => {
+      if (err) {
+        return res.status(500).send("Erro ao verificar e-mail.");
+      }
+      if (user) {
+        return res.status(400).send("E-mail já registrado. Tente um email diferente");
+      }
+
+      // Criar a conta e depois o pedido
+      createNewUser();
+    });
+  } else {
+    // Prossiga com a criação do pedido se não estiver criando conta
+    processOrder(userId);
+  }
+
+  function createNewUser() {
+    const saltRounds = 10;
+    bcrypt.hash(password, saltRounds, (err, hashedPassword) => {
+      if (err) {
+        return res.status(500).send("Erro ao criar conta.");
+      }
+
+      db.run(
+        "INSERT INTO Users (email, password, name) VALUES (?, ?, ?)",
+        [email, hashedPassword, `${firstName} ${lastName}`],
+        function (err) {
+          if (err) {
+            return res.status(500).send("Erro ao criar conta.");
+          }
+
+          // Use o novo userId para criar o pedido
+          processOrder(this.lastID);
+        }
+      );
+    });
+  }
+
+  function processOrder(finalUserId) {
+  const query = `
+    SELECT Products.price, Cart.quantity FROM Cart 
+    JOIN Products ON Cart.product_id = Products.id 
+    WHERE Cart.user_id = ?;`;
+
+    db.all(query, [finalUserId], (err, rows) => {
+      if (err) {
+        return res.status(500).send("Erro ao calcular total do pedido.");
+      }
+
+      const totalPrice =
+        rows.reduce((total, item) => total + item.price * item.quantity, 0) +
+        shippingFee;
+
+        db.run(
+          `
+            INSERT INTO Orders (
+                user_id, first_name, last_name, address, number, cep, phone, email,
+                payment_method, card_number, card_expiry, card_cvc, boleto_code, pix_key, total_price, status
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          [
+          finalUserId,
+          firstName,
+          lastName,
+          address,
+          number,
+          cep,
+          phone,
+          email,
+          paymentMethod,
+          cardNumber || null,
+          cardExpiry || null,
+          cardCvc || null,
+          boletoCode || null,
+          pixKey || null,
+          totalPrice,
+          "Pagamento aprovado",
+        ],
+        function (err) {
+          if (err) {
+            return res.status(500).send("Erro ao finalizar pedido.");
+          }
+
+          const orderId = this.lastID;
+          const orderNumber = `${orderId}-${
+            Math.floor(Math.random() * 9000) + 1000
+          }`;
+
+          db.run(
+            "UPDATE Orders SET order_number = ? WHERE id = ?",
+            [orderNumber, orderId],
+            function (err) {
+              if (err) {
+                return res.status(500).send("Erro ao atualizar número do pedido.");
               }
+
+              // Limpar o carrinho após a conclusão do pedido
+              db.run("DELETE FROM Cart WHERE user_id = ?", [finalUserId], function (err) {
+                if (err) {
+                  return res.status(500).send("Erro ao limpar o carrinho.");
+                }
+                res.status(201).send({ id: orderId, orderNumber });
+              });
             }
           );
         }
@@ -437,7 +586,7 @@ app.get("/dashboard.html", (req, res) => {
   res.sendFile(path.join(__dirname, "../public/dashboard.html"));
 });
 
-app.listen(port, () => {
-  console.log(`Servidor rodando em http://localhost:${port}`);
-  console.log(`Documentação rodando em http://localhost:${port}/api-docs`);
+app.listen(port, async () => {
+  console.log((`Servidor rodando em http://localhost:${port}`));
+  console.log((`Documentação rodando em http://localhost:${port}/api-docs`));
 });

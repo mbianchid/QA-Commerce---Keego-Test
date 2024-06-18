@@ -35,9 +35,9 @@ document.addEventListener('DOMContentLoaded', function() {
                         const cartItem = document.createElement('div');
                         cartItem.className = 'cart-item mb-4';
                         cartItem.innerHTML = `
-                            <h4>${item.name}</h4>
-                            <p>Price: R$${(item.price).toFixed(2)}</p>
-                            <p>Quantity: ${item.quantity}</p>
+                            <legend>${item.name}</legend>
+                            <p>Preço: R$${(item.price).toFixed(2)}</p>
+                            <p>Quantidade: ${item.quantity}</p>
                             <p>Total: R$${(item.price * item.quantity).toFixed(2)}</p>
                             <button class="btn btn-danger remove-from-cart" data-product-id="${item.productId}">Remover</button>
                         `;
