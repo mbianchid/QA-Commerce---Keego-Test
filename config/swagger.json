@@ -8,14 +8,6 @@
   "host": "localhost:3000",
   "basePath": "/api",
   "schemes": ["http"],
-  "securityDefinitions": {
-    "Bearer": {
-      "type": "apiKey",
-      "name": "Authorization",
-      "in": "header", 
-      "description": "Prefixe com 'Bearer ' o token JWT."
-    }
-  },
   "paths": {
     "/login": {
       "post": {
@@ -351,11 +343,11 @@
       "properties": {
         "email": {
           "type": "string",
-          "example": "admin@admin.com"
+          "example": "usuario@exemplo.com"
         },
         "password": {
           "type": "string",
-          "example": "admin"
+          "example": "senha123"
         }
       },
       "required": ["email", "password"]
@@ -369,11 +361,11 @@
         },
         "name": {
           "type": "string",
-          "example": "João"
+          "example": "John Doe"
         },
         "token": {
           "type": "string",
-          "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.e30.QvW3Ki8YrFJYJH9j8B8a67jlreC1U-l8K6mvbW4LXHk"
+          "example": "jwt_token_aqui"
         }
       }
     },
@@ -663,6 +655,13 @@
       "items": {
         "$ref": "#/definitions/UserResponse"
       }
+    }
+  },
+  "securityDefinitions": {
+    "Bearer": {
+      "type": "apiKey",
+      "name": "Authorization",
+      "in": "header"
     }
   }
 }

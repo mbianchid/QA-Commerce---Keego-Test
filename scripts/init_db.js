@@ -1,5 +1,6 @@
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
+const bcrypt = require('bcrypt');
 
 // Caminho para o banco de dados
 const dbPath = path.join(__dirname, '../src/qa_commerce.db');
@@ -20,7 +21,8 @@ db.serialize(() => {
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             name TEXT,
             email TEXT UNIQUE,
-            password TEXT
+            password TEXT,
+            isAdmin INTEGER DEFAULT 0
         )
     `);
 
@@ -71,8 +73,10 @@ db.serialize(() => {
             FOREIGN KEY(user_id) REFERENCES Users(id)
         )
     `);
-
     console.log("Tabelas criadas com sucesso.");
+
+
+    
 
     // Inserir dados de exemplo para produtos
     const products = [
@@ -99,12 +103,40 @@ db.serialize(() => {
     });
 
     console.log("Produtos de exemplo inseridos com sucesso.");
-});
 
-// Fechar o banco de dados
-db.close((err) => {
-    if (err) {
-        return console.error('Erro ao fechar o banco de dados:', err.message);
-    }
-    console.log('Fechando a conexão com o banco de dados SQLite.');
+    // Inserir usuário administrador
+    const adminEmail = 'admin@admin.com';
+    const adminPassword = 'admin';
+    const adminName = 'Admin';
+    const saltRounds = 10;
+
+    bcrypt.hash(adminPassword, saltRounds, (err, hashedPassword) => {
+        if (err) {
+            console.error('Erro ao hashear a senha:', err.message);
+            db.close((closeErr) => {
+                if (closeErr) {
+                    console.error('Erro ao fechar o banco de dados:', closeErr.message);
+                }
+            });
+            return;
+        }
+        db.run(
+            "INSERT INTO Users (name, email, password, isAdmin) VALUES (?, ?, ?, ?)",
+            [adminName, adminEmail, hashedPassword, 1], // 1 indica que é administrador
+            (err) => {
+                if (err) {
+                    console.error('Erro ao inserir usuário administrador:', err.message);
+                } else {
+                    console.log('Usuário administrador inserido com sucesso.');
+                }
+                db.close((closeErr) => {
+                    if (closeErr) {
+                        console.error('Erro ao fechar o banco de dados:', closeErr.message);
+                    } else {
+                        console.log('Fechando a conexão com o banco de dados SQLite.');
+                    }
+                });
+            }
+        );
+    });
 });
