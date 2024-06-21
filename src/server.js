@@ -24,11 +24,15 @@ function authenticateToken(req, res, next) {
   if (!token) return res.status(401).send("Token não fornecido.");
 
   jwt.verify(token, SECRET_KEY, (err, user) => {
-      if (err) return res.status(403).send("Token inválido.");
-      req.user = user;
-      next();
+    if (err) return res.status(403).send("Token inválido.");
+    req.user = user;
+    next();
   });
 }
+
+module.exports = {
+  authenticateToken,
+};
 
 // Middleware para verificar se é admin
 function isAdmin(req, res, next) {
@@ -115,7 +119,7 @@ app.get("/api/produtos", (req, res) => {
   );
 });
 
-// Ajuste na rota de registro de usuário
+//Rota de registro de usuário
 app.post("/api/registrar", (req, res) => {
   const { name, email, password } = req.body;
   const saltRounds = 10;
@@ -139,7 +143,6 @@ app.post("/api/registrar", (req, res) => {
 });
 
 // Rota de checkout
-
 app.post("/api/checkout", (req, res) => {
   const {
     userId,
@@ -419,7 +422,9 @@ app.post("/api/login", (req, res) => {
         return res.status(401).send({ error: "Email ou senha incorretos." });
       }
 
-      res.json({ id: user.id, name: user.name });
+      // Criação do token JWT
+      const token = jwt.sign({ id: user.id, isAdmin: user.isAdmin }, SECRET_KEY, { expiresIn: '1h' });
+      res.json({ id: user.id, name: user.name, token: `Bearer ${token}` });
     });
   });
 });
@@ -473,41 +478,43 @@ app.get("/dashboard.html", (req, res) => {
   res.sendFile(path.join(__dirname, "../public/dashboard.html"));
 });
 
-app.put('/api/users/:id', authenticateAdmin, (req, res) => {
+app.put('/api/users/:id', authenticateAdmin, authenticateAdmin, isAdmin, (req, res) => {
   const { id } = req.params;
-  const { name, email, password } = req.body;
+  const { name, email, password, isAdmin } = req.body;
+
+  const updateUser = (hashedPassword) => {
+    db.run(
+      "UPDATE Users SET name = ?, email = ?, password = COALESCE(?, password), isAdmin = ? WHERE id = ?",
+      [name, email, hashedPassword, isAdmin ? 1 : 0, id],
+      function (err) {
+        if (err) {
+          return res.status(500).send("Erro ao atualizar o usuário.");
+        }
+        res.send("Usuário atualizado com sucesso.");
+      }
+    );
+  };
 
   if (password) {
-      bcrypt.hash(password, 10, (err, hashedPassword) => {
-          if (err) {
-              return res.status(500).send("Erro ao hashear a senha.");
-          }
-
-          db.run("UPDATE Users SET name = ?, email = ?, password = ? WHERE id = ?", [name, email, hashedPassword, id], function (err) {
-              if (err) {
-                  return res.status(500).send("Erro ao atualizar o usuário.");
-              }
-              res.send("Usuário atualizado com sucesso.");
-          });
-      });
+    bcrypt.hash(password, 10, (err, hashedPassword) => {
+      if (err) {
+        return res.status(500).send("Erro ao hashear a senha.");
+      }
+      updateUser(hashedPassword);
+    });
   } else {
-      db.run("UPDATE Users SET name = ?, email = ? WHERE id = ?", [name, email, id], function (err) {
-          if (err) {
-              return res.status(500).send("Erro ao atualizar o usuário.");
-          }
-          res.send("Usuário atualizado com sucesso.");
-      });
+    updateUser(null);
   }
 });
 
-app.delete('/api/users/:id', authenticateAdmin, (req, res) => {
+app.delete('/api/users/:id', authenticateAdmin, authenticateAdmin, isAdmin, (req, res) => {
   const { id } = req.params;
 
   db.run("DELETE FROM Users WHERE id = ?", [id], function (err) {
-      if (err) {
-          return res.status(500).send("Erro ao deletar o usuário.");
-      }
-      res.send("Usuário deletado com sucesso.");
+    if (err) {
+      return res.status(500).send("Erro ao deletar o usuário.");
+    }
+    res.send("Usuário deletado com sucesso.");
   });
 });
 
@@ -542,16 +549,16 @@ app.post('/api/login', (req, res) => {
 
   db.get("SELECT * FROM Users WHERE email = ?", [email], (err, user) => {
       if (err || !user) {
-          return res.status(401).send("Email ou senha incorretos.");
+          return res.status(401).json({ message: "Email ou senha incorretos." });
       }
 
       bcrypt.compare(password, user.password, (err, isMatch) => {
           if (err || !isMatch) {
-              return res.status(401).send("Email ou senha incorretos.");
+              return res.status(401).json({ message: "Email ou senha incorretos." });
           }
 
           const token = jwt.sign({ id: user.id, isAdmin: user.isAdmin }, SECRET_KEY, { expiresIn: '1h' });
-          res.json({ id: user.id, name: user.name, token }); 
+          res.json({ id: user.id, name: user.name, token: `Bearer ${token}` });
       });
   });
 });

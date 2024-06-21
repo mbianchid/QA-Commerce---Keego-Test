@@ -337,17 +337,25 @@
       }
     }
   },
+  "securityDefinitions": {
+    "Bearer": {
+      "type": "apiKey",
+      "name": "Authorization",
+      "in": "header",
+      "description": "Cabeçalho de autorização JWT usando o esquema Bearer. Para acessar rotas protegidas, forneça o token JWT no cabeçalho da solicitação no seguinte formato: \"Authorization: Bearer {token}\". Substitua {token} pelo token que você recebeu após o login."
+    }
+  },
   "definitions": {
     "LoginRequest": {
       "type": "object",
       "properties": {
         "email": {
           "type": "string",
-          "example": "usuario@exemplo.com"
+          "example": "admin@admin.com"
         },
         "password": {
           "type": "string",
-          "example": "senha123"
+          "example": "admin"
         }
       },
       "required": ["email", "password"]
@@ -365,7 +373,7 @@
         },
         "token": {
           "type": "string",
-          "example": "jwt_token_aqui"
+          "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
         }
       }
     },
@@ -378,7 +386,7 @@
         },
         "productId": {
           "type": "integer",
-          "example": 101
+          "example": 1
         },
         "quantity": {
           "type": "integer",
@@ -507,7 +515,7 @@
       "properties": {
         "id": {
           "type": "integer",
-          "example": 101
+          "example": 1
         },
         "name": {
           "type": "string",
@@ -655,13 +663,6 @@
       "items": {
         "$ref": "#/definitions/UserResponse"
       }
-    }
-  },
-  "securityDefinitions": {
-    "Bearer": {
-      "type": "apiKey",
-      "name": "Authorization",
-      "in": "header"
     }
   }
 }
