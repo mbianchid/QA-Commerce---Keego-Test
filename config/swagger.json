@@ -52,13 +52,13 @@
         ],
         "responses": {
           "201": {
-            "description": "Produto adicionado ao carrinho com sucesso",
+            "description": "Produto adicionado ao carrinho com sucesso.",
             "schema": {
               "$ref": "#/definitions/CarrinhoResponse"
             }
           },
           "500": {
-            "description": "Erro ao adicionar produto ao carrinho"
+            "description": "Erro ao adicionar produto ao carrinho."
           }
         }
       },
@@ -77,13 +77,13 @@
         ],
         "responses": {
           "200": {
-            "description": "Produto atualizado no carrinho com sucesso",
+            "description": "Produto atualizado no carrinho com sucesso.",
             "schema": {
               "$ref": "#/definitions/CarrinhoResponse"
             }
           },
           "500": {
-            "description": "Erro ao atualizar produto no carrinho"
+            "description": "Erro ao atualizar produto no carrinho."
           }
         }
       },
@@ -102,13 +102,13 @@
         ],
         "responses": {
           "200": {
-            "description": "Produto removido do carrinho com sucesso",
+            "description": "Produto removido do carrinho com sucesso.",
             "schema": {
               "$ref": "#/definitions/CarrinhoResponse"
             }
           },
           "500": {
-            "description": "Erro ao remover produto do carrinho"
+            "description": "Erro ao remover produto do carrinho."
           }
         }
       }
@@ -129,16 +129,16 @@
         ],
         "responses": {
           "201": {
-            "description": "Pedido finalizado com sucesso",
+            "description": "Pedido finalizado com sucesso.",
             "schema": {
               "$ref": "#/definitions/CheckoutResponse"
             }
           },
           "400": {
-            "description": "Erro de validação nos dados fornecidos"
+            "description": "Erro de validação nos dados fornecidos."
           },
           "500": {
-            "description": "Erro ao finalizar pedido"
+            "description": "Erro ao finalizar pedido."
           }
         }
       }
@@ -163,13 +163,13 @@
         ],
         "responses": {
           "200": {
-            "description": "Lista de produtos",
+            "description": "Lista de produtos.",
             "schema": {
               "$ref": "#/definitions/ProdutosResponse"
             }
           },
           "500": {
-            "description": "Erro ao buscar produtos"
+            "description": "Erro ao buscar produtos."
           }
         }
       }
@@ -189,16 +189,16 @@
         ],
         "responses": {
           "200": {
-            "description": "Detalhes do produto",
+            "description": "Detalhes do produto.",
             "schema": {
               "$ref": "#/definitions/ProdutoResponse"
             }
           },
           "404": {
-            "description": "Produto não encontrado"
+            "description": "Produto não encontrado."
           },
           "500": {
-            "description": "Erro ao buscar detalhes do produto"
+            "description": "Erro ao buscar detalhes do produto."
           }
         }
       }
@@ -218,13 +218,13 @@
         ],
         "responses": {
           "200": {
-            "description": "Lista de pedidos",
+            "description": "Lista de pedidos.",
             "schema": {
               "$ref": "#/definitions/OrdersResponse"
             }
           },
           "500": {
-            "description": "Erro ao buscar pedidos"
+            "description": "Erro ao buscar pedidos."
           }
         }
       }
@@ -245,16 +245,16 @@
         ],
         "responses": {
           "201": {
-            "description": "Usuário criado com sucesso",
+            "description": "Usuário criado com sucesso.",
             "schema": {
               "$ref": "#/definitions/UserResponse"
             }
           },
           "400": {
-            "description": "Erro de validação nos dados fornecidos"
+            "description": "Erro de validação nos dados fornecidos."
           },
           "500": {
-            "description": "Erro ao criar usuário"
+            "description": "Erro ao criar usuário."
           }
         }
       },
@@ -263,13 +263,13 @@
         "description": "Retorna uma lista de usuários.",
         "responses": {
           "200": {
-            "description": "Lista de usuários",
+            "description": "Lista de usuários.",
             "schema": {
               "$ref": "#/definitions/UsersResponse"
             }
           },
           "500": {
-            "description": "Erro ao buscar usuários"
+            "description": "Erro ao buscar usuários."
           }
         }
       }
@@ -297,10 +297,10 @@
         ],
         "responses": {
           "200": {
-            "description": "Usuário atualizado com sucesso"
+            "description": "Usuário atualizado com sucesso."
           },
           "500": {
-            "description": "Erro ao atualizar usuário"
+            "description": "Erro ao atualizar usuário."
           }
         },
         "security": [
@@ -323,10 +323,10 @@
         ],
         "responses": {
           "200": {
-            "description": "Usuário deletado com sucesso"
+            "description": "Usuário deletado com sucesso."
           },
           "500": {
-            "description": "Erro ao deletar usuário"
+            "description": "Erro ao deletar usuário."
           }
         },
         "security": [
@@ -337,25 +337,17 @@
       }
     }
   },
-  "securityDefinitions": {
-    "Bearer": {
-      "type": "apiKey",
-      "name": "Authorization",
-      "in": "header",
-      "description": "Cabeçalho de autorização JWT usando o esquema Bearer. Para acessar rotas protegidas, forneça o token JWT no cabeçalho da solicitação no seguinte formato: \"Authorization: Bearer {token}\". Substitua {token} pelo token que você recebeu após o login."
-    }
-  },
   "definitions": {
     "LoginRequest": {
       "type": "object",
       "properties": {
         "email": {
           "type": "string",
-          "example": "admin@admin.com"
+          "example": "usuario@exemplo.com"
         },
         "password": {
           "type": "string",
-          "example": "admin"
+          "example": "senha123"
         }
       },
       "required": ["email", "password"]
@@ -373,7 +365,7 @@
         },
         "token": {
           "type": "string",
-          "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+          "example": "JWT token"
         }
       }
     },
@@ -386,7 +378,7 @@
         },
         "productId": {
           "type": "integer",
-          "example": 1
+          "example": 101
         },
         "quantity": {
           "type": "integer",
@@ -404,7 +396,7 @@
         },
         "message": {
           "type": "string",
-          "example": "Produto adicionado ao carrinho."
+          "example": "mensagem"
         }
       }
     },
@@ -515,7 +507,7 @@
       "properties": {
         "id": {
           "type": "integer",
-          "example": 1
+          "example": 101
         },
         "name": {
           "type": "string",
@@ -663,6 +655,14 @@
       "items": {
         "$ref": "#/definitions/UserResponse"
       }
+    }
+  },
+  "securityDefinitions": {
+    "Bearer": {
+      "type": "apiKey",
+      "name": "Authorization",
+      "in": "header",
+      "description": "Cabeçalho de autorização JWT usando o esquema Bearer. Exemplo: \"Authorization: Bearer {token}\""
     }
   }
 }
