@@ -3,7 +3,7 @@ const bodyParser = require("body-parser");
 const db = require("../config/db");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-const SECRET_KEY = process.env.JWT_SECRET || "admin@admin"; // Use uma variável de ambiente para isso em produção
+const SECRET_KEY = process.env.JWT_SECRET || "admin@admin";
 const Joi = require("joi");
 const swaggerUi = require("swagger-ui-express");
 const swaggerDocument = require("../config/swagger.json");
@@ -14,7 +14,7 @@ const port = 3000;
 
 // Middleware
 app.use(bodyParser.json());
-app.use(express.static("public")); // Servir frontend estático
+app.use(express.static("public"));
 
 // Middleware de autenticação
 function authenticateToken(req, res, next) {
@@ -30,10 +30,6 @@ function authenticateToken(req, res, next) {
   });
 }
 
-module.exports = {
-  authenticateToken,
-};
-
 // Middleware para verificar se é admin
 function isAdmin(req, res, next) {
   if (!req.user.isAdmin) {
@@ -47,13 +43,13 @@ app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 // Esquema de validação usando Joi
 const checkoutSchema = Joi.object({
-  userId: Joi.number().optional(), // Torna userId opcional
+  userId: Joi.number().optional(),
   firstName: Joi.string().min(2).max(50).required(),
   lastName: Joi.string().min(2).max(50).required(),
   address: Joi.string().min(5).max(100).required(),
   number: Joi.string().min(1).max(10).required(),
   cep: Joi.string().length(8).required(),
-  phone: Joi.string().min(10).max(15).allow(""), // Telefone não obrigatório
+  phone: Joi.string().min(10).max(15).allow(""),
   email: Joi.string().email().required(),
   paymentMethod: Joi.string().valid("credit_card", "boleto", "pix").required(),
   cardNumber: Joi.string().when("paymentMethod", {
@@ -90,9 +86,9 @@ const checkoutSchema = Joi.object({
 
 // Rota para listar produtos com paginação
 app.get("/api/produtos", (req, res) => {
-  const page = parseInt(req.query.page) || 1; // Página atual
-  const limit = parseInt(req.query.limit) || 9; // Limite de produtos por página
-  const offset = (page - 1) * limit; // Deslocamento para a consulta
+  const page = parseInt(req.query.page) || 1;
+  const limit = parseInt(req.query.limit) || 9;
+  const offset = (page - 1) * limit;
 
   db.all(
     "SELECT * FROM Products LIMIT ? OFFSET ?",
@@ -101,7 +97,6 @@ app.get("/api/produtos", (req, res) => {
       if (err) {
         res.status(500).send("Erro ao buscar produtos.");
       } else {
-        // Consultar o total de produtos para calcular o número de páginas
         db.get("SELECT COUNT(*) as total FROM Products", (err, result) => {
           if (err) {
             res.status(500).send("Erro ao calcular o total de produtos.");
@@ -120,7 +115,7 @@ app.get("/api/produtos", (req, res) => {
   );
 });
 
-//Rota de registro de usuário
+// Rota de registro de usuário
 app.post("/api/registrar", (req, res) => {
   const { name, email, password } = req.body;
   const saltRounds = 10;
@@ -164,16 +159,14 @@ app.post("/api/checkout", (req, res) => {
     password,
   } = req.body;
 
-  // Validação com Joi
   const { error } = checkoutSchema.validate(req.body);
   if (error) {
     return res.status(400).send(error.details[0].message);
   }
 
-  const shippingFee = 19.9; // Frete fixo
+  const shippingFee = 19.9;
 
   if (createAccount) {
-    // Verificar se o e-mail já está registrado
     db.get("SELECT * FROM Users WHERE email = ?", [email], (err, user) => {
       if (err) {
         return res.status(500).send("Erro ao verificar e-mail.");
@@ -183,12 +176,9 @@ app.post("/api/checkout", (req, res) => {
           .status(400)
           .send("E-mail já registrado. Tente um email diferente");
       }
-
-      // Criar a conta e depois o pedido
       createNewUser();
     });
   } else {
-    // Prossiga com a criação do pedido se não estiver criando conta
     processOrder(userId);
   }
 
@@ -206,8 +196,6 @@ app.post("/api/checkout", (req, res) => {
           if (err) {
             return res.status(500).send("Erro ao criar conta.");
           }
-
-          // Use o novo userId para criar o pedido
           processOrder(this.lastID);
         }
       );
@@ -273,7 +261,6 @@ app.post("/api/checkout", (req, res) => {
                   .send("Erro ao atualizar número do pedido.");
               }
 
-              // Limpar o carrinho após a conclusão do pedido
               db.run(
                 "DELETE FROM Cart WHERE user_id = ?",
                 [finalUserId],
@@ -340,7 +327,6 @@ app.post("/api/carrinho", (req, res) => {
             if (err) {
               res.status(500).send("Erro ao adicionar produto ao carrinho.");
             } else {
-              /* res.status(201).send({ id: this.lastID }); */
               res
                 .status(201)
                 .json({
@@ -371,23 +357,28 @@ app.get("/api/carrinho/:userId", (req, res) => {
   );
 });
 
-// Rota para deletar produtos no carrinho
-app.delete("/api/carrinho/:userId/:productId", (req, res) => {
-  const userId = req.params.userId;
-  const productId = req.params.productId;
-  db.run(
-    "DELETE FROM Cart WHERE user_id = ? AND product_id = ?",
-    [userId, productId],
-    function (err) {
-      if (err) {
-        res.status(500).send("Erro ao remover produto do carrinho.");
-      } else if (this.changes === 0) {
-        res.status(404).send("Produto não encontrado no carrinho.");
-      } else {
-        res.status(200).send({ message: "Produto removido do carrinho." });
-      }
+// Rota para remover todos os itens do carrinho de um usuário
+app.delete("/api/carrinho/:userId", (req, res) => {
+  const { userId } = req.params;
+
+  db.run("DELETE FROM Cart WHERE user_id = ?", [userId], function (err) {
+    if (err) {
+      return res.status(500).send("Erro ao remover itens do carrinho.");
     }
-  );
+    res.status(200).json({ message: "Todos os itens do carrinho removidos com sucesso." });
+  });
+});
+
+// Rota para remover um item específico do carrinho de um usuário
+app.delete("/api/carrinho/:userId/:productId", (req, res) => {
+  const { userId, productId } = req.params;
+
+  db.run("DELETE FROM Cart WHERE user_id = ? AND product_id = ?", [userId, productId], function (err) {
+    if (err) {
+      return res.status(500).send("Erro ao remover item do carrinho.");
+    }
+    res.status(200).json({ message: "Item do carrinho removido com sucesso." });
+  });
 });
 
 // Rota para obter detalhes de um produto específico
@@ -439,7 +430,6 @@ app.post("/api/login", (req, res) => {
         return res.status(401).send({ error: "Email ou senha incorretos." });
       }
 
-      // Criação do token JWT
       const token = jwt.sign(
         { id: user.id, isAdmin: user.isAdmin },
         SECRET_KEY,
@@ -494,65 +484,6 @@ app.get("/api/ultimo-pedido/:userId", (req, res) => {
   );
 });
 
-// Servir arquivos estáticos HTML diretamente
-app.get("/dashboard.html", (req, res) => {
-  res.sendFile(path.join(__dirname, "../public/dashboard.html"));
-});
-
-app.put(
-  "/api/users/:id",
-  authenticateAdmin,
-  authenticateAdmin,
-  isAdmin,
-  (req, res) => {
-    const { id } = req.params;
-    const { name, email, password, isAdmin } = req.body;
-
-    const updateUser = (hashedPassword) => {
-      db.run(
-        "UPDATE Users SET name = ?, email = ?, password = COALESCE(?, password), isAdmin = ? WHERE id = ?",
-        [name, email, hashedPassword, isAdmin ? 1 : 0, id],
-        function (err) {
-          if (err) {
-            return res.status(500).send("Erro ao atualizar o usuário.");
-          }
-          /* res.send("Usuário atualizado com sucesso."); */
-          res.status(200).json({ message: "Usuário atualizado com sucesso." });
-        }
-      );
-    };
-
-    if (password) {
-      bcrypt.hash(password, 10, (err, hashedPassword) => {
-        if (err) {
-          return res.status(500).send("Erro ao processar a senha.");
-        }
-        updateUser(hashedPassword);
-      });
-    } else {
-      updateUser(null);
-    }
-  }
-);
-
-app.delete(
-  "/api/users/:id",
-  authenticateAdmin,
-  authenticateAdmin,
-  isAdmin,
-  (req, res) => {
-    const { id } = req.params;
-
-    db.run("DELETE FROM Users WHERE id = ?", [id], function (err) {
-      if (err) {
-        return res.status(500).send("Erro ao deletar o usuário.");
-      }
-      /* res.send("Usuário deletado com sucesso."); */
-      res.status(200).json({ message: "Usuário deletado com sucesso." });
-    });
-  }
-);
-
 // Rota PUT para atualizar itens no carrinho
 app.put("/api/cart/:id", (req, res) => {
   const { id } = req.params;
@@ -565,7 +496,6 @@ app.put("/api/cart/:id", (req, res) => {
       if (err) {
         return res.status(500).send("Erro ao atualizar item no carrinho.");
       }
-      /* res.send("Item no carrinho atualizado com sucesso."); */
       res
         .status(200)
         .json({ message: "Item do carrinho atualizado com sucesso." });
@@ -581,67 +511,14 @@ app.delete("/api/cart/:id", (req, res) => {
     if (err) {
       return res.status(500).send("Erro ao remover item do carrinho.");
     }
-    /* res.send("Item do carrinho removido com sucesso."); */
     res.status(200).json({ message: "Item do carrinho removido com sucesso." });
   });
 });
-
-// Endpoint de login
-app.post("/api/login", (req, res) => {
-  const { email, password } = req.body;
-
-  db.get("SELECT * FROM Users WHERE email = ?", [email], (err, user) => {
-    if (err || !user) {
-      return res.status(401).json({ message: "Email ou senha incorretos." });
-    }
-
-    bcrypt.compare(password, user.password, (err, isMatch) => {
-      if (err || !isMatch) {
-        return res.status(401).json({ message: "Email ou senha incorretos." });
-      }
-
-      const token = jwt.sign(
-        { id: user.id, isAdmin: user.isAdmin },
-        SECRET_KEY,
-        { expiresIn: "1h" }
-      );
-      res.json({ id: user.id, name: user.name, token: `Bearer ${token}` });
-    });
-  });
-});
-
-// Rota POST para criar novos usuários
-/* app.post("/api/users", (req, res) => {
-  const { name, email, password, isAdmin } = req.body;
-
-  bcrypt.hash(password, 10, (err, hashedPassword) => {
-    if (err) {
-      return res.status(500).send("Erro ao processar a senha.");
-    }
-
-    db.run(
-      "INSERT INTO Users (name, email, password, isAdmin) VALUES (?, ?, ?, ?)",
-      [name, email, hashedPassword, isAdmin ? 1 : 0],
-      function (err) {
-        if (err) {
-          return res
-            .status(500)
-            .send("Erro ao criar usuário. Verifique as regras de negócio");
-        }
-        res.status(201).json({
-          message: "Usuário criado com sucesso.",
-          id: this.lastID,
-        });
-      }
-    );
-  });
-}); */
 
 // Rota POST para criar novos usuários
 app.post("/api/users", (req, res) => {
   const { name, email, password, isAdmin } = req.body;
 
-  // Verificar se o email já está cadastrado
   db.get("SELECT * FROM Users WHERE email = ?", [email], (err, row) => {
     if (err) {
       return res.status(500).send("Erro ao verificar o email.");
@@ -650,7 +527,6 @@ app.post("/api/users", (req, res) => {
       return res.status(400).send("Email já cadastrado.");
     }
 
-    // Se o email não estiver cadastrado, proceder com a criação do usuário
     bcrypt.hash(password, 10, (err, hashedPassword) => {
       if (err) {
         return res.status(500).send("Erro ao processar a senha.");
@@ -666,8 +542,8 @@ app.post("/api/users", (req, res) => {
               .send("Erro ao criar usuário. Verifique as regras de negócio");
           }
           res.status(201).json({
-            message: "Usuário criado com sucesso.", 
-            id: this.lastID
+            message: "Usuário criado com sucesso.",
+            id: this.lastID,
           });
         }
       );
@@ -686,41 +562,10 @@ app.get("/api/users", (req, res) => {
 });
 
 // Rota PUT para atualizar usuários com autenticação de administrador
-/* app.put("/api/users/:id", authenticateAdmin, authenticateAdmin, (req, res) => {
-  const { id } = req.params;
-  const { name, email, password, isAdmin } = req.body;
-
-  const updateUser = (hashedPassword) => {
-    db.run(
-      "UPDATE Users SET name = ?, email = ?, password = COALESCE(?, password), isAdmin = ? WHERE id = ?",
-      [name, email, hashedPassword, isAdmin ? 1 : 0, id],
-      function (err) {
-        if (err) {
-          return res.status(500).send("Erro ao atualizar o usuário.");
-        }
-       res.status(201).json({ message: "Usuário atualizado com sucesso." });
-      }
-    );
-  };
-
-  if (password) {
-    bcrypt.hash(password, 10, (err, hashedPassword) => {
-      if (err) {
-        return res.status(500).send("Erro ao processar a senha.");
-      }
-      updateUser(hashedPassword);
-    });
-  } else {
-    updateUser(null);
-  }
-});
- */
-
 app.put("/api/users/:id", authenticateAdmin, (req, res) => {
   const { id } = req.params;
   const { name, email, password, isAdmin } = req.body;
 
-  // Verificar se o email já está cadastrado para outro usuário
   db.get("SELECT * FROM Users WHERE email = ? AND id != ?", [email, id], (err, row) => {
     if (err) {
       return res.status(500).send("Erro ao verificar o email.");
@@ -755,24 +600,22 @@ app.put("/api/users/:id", authenticateAdmin, (req, res) => {
   });
 });
 
-
 // Rota DELETE para deletar usuários com autenticação de administrador
-app.delete(
-  "/api/users/:id",
-  authenticateAdmin,
-  authenticateAdmin,
-  (req, res) => {
-    const { id } = req.params;
+app.delete("/api/users/:id", authenticateAdmin, (req, res) => {
+  const { id } = req.params;
 
-    db.run("DELETE FROM Users WHERE id = ?", [id], function (err) {
-      if (err) {
-        return res.status(500).send("Erro ao deletar o usuário.");
-      }
-      /*  res.send("Usuário deletado com sucesso."); */
-      res.status(200).json({ message: "Usuário deletado com sucesso." });
-    });
-  }
-);
+  db.run("DELETE FROM Users WHERE id = ?", [id], function (err) {
+    if (err) {
+      return res.status(500).send("Erro ao deletar o usuário.");
+    }
+    res.status(200).json({ message: "Usuário deletado com sucesso." });
+  });
+});
+
+// Servir arquivos estáticos HTML diretamente
+app.get("/dashboard.html", (req, res) => {
+  res.sendFile(path.join(__dirname, "../public/dashboard.html"));
+});
 
 app.listen(port, async () => {
   console.log(`Servidor rodando em http://localhost:${port}`);

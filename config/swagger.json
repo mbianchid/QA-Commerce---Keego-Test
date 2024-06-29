@@ -7,7 +7,9 @@
   },
   "host": "localhost:3000",
   "basePath": "/api",
-  "schemes": ["http"],
+  "schemes": [
+    "http"
+  ],
   "paths": {
     "/login": {
       "post": {
@@ -32,6 +34,56 @@
           },
           "401": {
             "description": "Email ou senha incorretos"
+          }
+        }
+      }
+    },
+    "/carrinho/{userId}": {
+      "get": {
+        "summary": "Listar itens do carrinho",
+        "description": "Retorna uma lista de itens no carrinho do usuário.",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "type": "integer",
+            "description": "ID do usuário"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lista de itens no carrinho.",
+            "schema": {
+              "$ref": "#/definitions/CarrinhoResponse"
+            }
+          },
+          "500": {
+            "description": "Erro ao buscar itens do carrinho."
+          }
+        }
+      },
+      "delete": {
+        "summary": "Remover todos os itens do carrinho",
+        "description": "Remove todos os itens do carrinho do usuário.",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "type": "integer",
+            "description": "ID do usuário"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Todos os itens do carrinho removidos com sucesso.",
+            "schema": {
+              "$ref": "#/definitions/CarrinhoResponse"
+            }
+          },
+          "500": {
+            "description": "Erro ao remover itens do carrinho."
           }
         }
       }
@@ -61,43 +113,26 @@
             "description": "Erro ao adicionar produto ao carrinho."
           }
         }
-      },
-      "put": {
-        "summary": "Atualizar item do carrinho",
-        "description": "Atualiza a quantidade de um produto no carrinho.",
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/CarrinhoRequest"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Produto atualizado no carrinho com sucesso.",
-            "schema": {
-              "$ref": "#/definitions/CarrinhoResponse"
-            }
-          },
-          "500": {
-            "description": "Erro ao atualizar produto no carrinho."
-          }
-        }
-      },
+      }
+    },
+    "/carrinho/{userId}/{productId}": {
       "delete": {
-        "summary": "Remover item do carrinho",
-        "description": "Remove um produto do carrinho do usuário.",
+        "summary": "Remover item específico do carrinho",
+        "description": "Remove um produto específico do carrinho do usuário.",
         "parameters": [
           {
-            "name": "body",
-            "in": "body",
+            "name": "userId",
+            "in": "path",
             "required": true,
-            "schema": {
-              "$ref": "#/definitions/CarrinhoRequest"
-            }
+            "type": "integer",
+            "description": "ID do usuário"
+          },
+          {
+            "name": "productId",
+            "in": "path",
+            "required": true,
+            "type": "integer",
+            "description": "ID do produto"
           }
         ],
         "responses": {
@@ -350,7 +385,10 @@
           "example": "senha123"
         }
       },
-      "required": ["email", "password"]
+      "required": [
+        "email",
+        "password"
+      ]
     },
     "LoginResponse": {
       "type": "object",
@@ -385,7 +423,33 @@
           "example": 2
         }
       },
-      "required": ["userId", "productId", "quantity"]
+      "required": [
+        "userId",
+        "productId",
+        "quantity"
+      ]
+    },
+    "CarrinhoUpdateRequest": {
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "integer",
+          "example": 1
+        },
+        "productId": {
+          "type": "integer",
+          "example": 101
+        },
+        "quantity": {
+          "type": "integer",
+          "example": 2
+        }
+      },
+      "required": [
+        "userId",
+        "productId",
+        "quantity"
+      ]
     },
     "CarrinhoResponse": {
       "type": "object",
@@ -468,7 +532,15 @@
           "example": "Password123!"
         }
       },
-      "required": ["firstName", "lastName", "address", "number", "cep", "email", "paymentMethod"]
+      "required": [
+        "firstName",
+        "lastName",
+        "address",
+        "number",
+        "cep",
+        "email",
+        "paymentMethod"
+      ]
     },
     "CheckoutResponse": {
       "type": "object",
@@ -627,7 +699,11 @@
           "example": false
         }
       },
-      "required": ["name", "email", "password"]
+      "required": [
+        "name",
+        "email",
+        "password"
+      ]
     },
     "UserResponse": {
       "type": "object",
