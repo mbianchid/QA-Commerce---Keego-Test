@@ -75,26 +75,23 @@ db.serialize(() => {
     `);
     console.log("Tabelas criadas com sucesso.");
 
-
-    
-
     // Inserir dados de exemplo para produtos
     const products = [
-        { name: 'Produto 1', description: 'Descrição do Produto 1', price: 10.0, image: 'images/imagem1.png' },
-        { name: 'Produto 2', description: 'Descrição do Produto 2', price: 20.0, image: 'images/imagem2.png' },
-        { name: 'Produto 3', description: 'Descrição do Produto 3', price: 30.0, image: 'images/imagem3.png' },
-        { name: 'Produto 4', description: 'Descrição do Produto 4', price: 40.0, image: 'images/imagem4.png' },
-        { name: 'Produto 5', description: 'Descrição do Produto 5', price: 50.0, image: 'images/imagem5.png' },
-        { name: 'Produto 6', description: 'Descrição do Produto 6', price: 60.0, image: 'images/imagem6.png' },
-        { name: 'Produto 7', description: 'Descrição do Produto 7', price: 70.0, image: 'images/imagem7.png' },
-        { name: 'Produto 8', description: 'Descrição do Produto 8', price: 80.0, image: 'images/imagem8.png' },
-        { name: 'Produto 9', description: 'Descrição do Produto 9', price: 90.0, image: 'images/imagem9.png' },
-        { name: 'Produto 10', description: 'Descrição do Produto 10', price: 100.0, image: 'images/imagem10.png' },
-        { name: 'Produto 11', description: 'Descrição do Produto 11', price: 110.0, image: 'images/imagem11.png' },
-        { name: 'Produto 12', description: 'Descrição do Produto 12', price: 120.0, image: 'images/imagem12.png' },
-        { name: 'Produto 13', description: 'Descrição do Produto 13', price: 130.0, image: 'images/imagem13.png' },
-        { name: 'Produto 14', description: 'Descrição do Produto 14', price: 140.0, image: 'images/imagem14.png' },
-        { name: 'Produto 15', description: 'Descrição do Produto 15', price: 150.0, image: 'images/imagem15.png' },
+        { name: 'Moletom com capuz "Se você acha que nada é impossível..."', description: 'Moletom com capuz preto fabricado com tecido de alta qualidade e caimento impecável.', price: 59.00, image: 'images/produtos/imagem1.jpeg' },
+        { name: 'Moletom com capuz "Na minha máquina funciona"', description: 'Moletom com capuz branco fabricado com tecido de alta qualidade e caimento impecável.', price: 59.00, image: 'images/produtos/imagem2.jpeg' },
+        { name: 'Ecobag "Na minha máquina funciona"', description: 'Eco bag fabricada em tecido 100% algodão cru, com dimensões 30 x 40 cm.', price: 30.0, image: 'images/produtos/imagem3.jpeg' },
+        { name: 'Moletom "Testar é o único lugar onde falhar é realmente uma vitória!"', description: 'Moletom com branco fabricado com tecido de alta qualidade e caimento impecável, fabricado em tecido 100% algodão.', price: 49.0, image: 'images/produtos/imagem4.jpeg' },
+        { name: 'Garrafa "Testar é o único lugar onde falhar é realmente uma vitória!"', description: 'Garrafa térmica que mantem bebida qyente por até 12h e até 24h fria. Capacidade de 500 ml. Fabricada em aço inoxidável.', price: 30.0, image: 'images/produtos/imagem5.jpeg' },
+        { name: 'Ecobag "Testar é o único lugar onde falhar é realmente uma vitória!"', description: 'Eco bag fabricada em tecido 100% algodão cru, com dimensões 30 x 40 cm.', price: 30.0, image: 'images/produtos/imagem6.jpeg' },
+        { name: 'Quadro "Se você acha que nada é impossível..."', description: 'Quadro decorativo moldurado com acabamento em vidro. Medidas: 40 x 60 cm.', price: 70.0, image: 'images/produtos/imagem7.jpeg' },
+        { name: 'Xícara Const', description: 'Xícara em porcelana. Capacidade: 270ml.', price: 40.0, image: 'images/produtos/imagem8.jpeg' },
+        { name: 'Moletom com capuz "Const"', description: 'Moletom com capuz branco fabricado com tecido de alta qualidade e caimento impecável.', price: 59.0, image: 'images/produtos/imagem9.jpeg' },
+        { name: 'Regata "Na minha máquina funciona"', description: 'Regata masculina canelada de fio 40/1 em algodão premium com elastano.', price: 60.0, image: 'images/produtos/imagem10.jpeg' },
+        { name: 'Agenda QA-Commerce', description: 'Agenda executiva em formato 17,7 x 24 cm, capa dura, 178 folhas.', price: 99.00, image: 'images/produtos/imagem11.jpeg' },
+        { name: 'Moletom QA-Commerce', description: 'Moletom com branco fabricado com tecido de alta qualidade e caimento impecável, fabricado em tecido 100% algodão.', price: 49.0, image: 'images/produtos/imagem12.jpeg' },
+        { name: 'Camiseta QA-Commerce', description: 'Camiseta branca fabricada em tecido 100% algodão.', price: 30.0, image: 'images/produtos/imagem13.jpeg' },
+        { name: 'Boné QA-Commerce', description: 'Boné fabricado em tecido 100% algodão, com regulagem traseira e acabamento interno personalizado. Medidas: circunferência mínima: 51 cm e circunferência máxima: 66 cm', price: 140.0, image: 'images/produtos/imagem14.jpeg' },
+        { name: 'Gorro "Era só cache"', description: 'Gorro unissex produzido em material sintético, com 48cm de circunferência e 20cm de altura. ', price: 50.0, image: 'images/produtos/imagem15.jpeg' },
     ];
 
     products.forEach(product => {
