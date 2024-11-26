@@ -563,7 +563,7 @@ app.get("/api/users", (req, res) => {
 });
 
 // Rota PUT para atualizar usuários com autenticação de administrador
-app.put("/api/users/:id", authenticateAdmin, (req, res) => {
+/* app.put("/api/users/:id", authenticateAdmin, (req, res) => {
   const { id } = req.params;
   const { name, email, password, isAdmin } = req.body;
 
@@ -599,7 +599,52 @@ app.put("/api/users/:id", authenticateAdmin, (req, res) => {
       updateUser(null);
     }
   });
+}); */
+
+app.put("/api/users/:id", authenticateToken, (req, res) => {
+  const { id } = req.params;
+  const { name, email, password } = req.body;
+
+  // Verificar se o usuário logado é o mesmo que está tentando atualizar
+  if (req.user.id != id) {
+      return res.status(403).send({ message: "Acesso negado. Você só pode editar seu próprio perfil." });
+  }
+
+  db.get("SELECT * FROM Users WHERE email = ? AND id != ?", [email, id], (err, row) => {
+      if (err) {
+          return res.status(500).send({ error: "Erro ao verificar o email." });
+      }
+      if (row) {
+          return res.status(400).send({ message: "Email já cadastrado por outro usuário." });
+      }
+
+      const updateUser = (hashedPassword) => {
+          db.run(
+              "UPDATE Users SET name = ?, email = ?, password = COALESCE(?, password) WHERE id = ?",
+              [name, email, hashedPassword, id],
+              function (err) {
+                  if (err) {
+                      return res.status(500).send({ error: "Erro ao atualizar o usuário." });
+                  }
+                  res.status(200).json({ message: "Usuário atualizado com sucesso." });
+              }
+          );
+      };
+
+      if (password) {
+          bcrypt.hash(password, 10, (err, hashedPassword) => {
+              if (err) {
+                  return res.status(500).send({ error: "Erro ao processar a senha." });
+              }
+              updateUser(hashedPassword);
+          });
+      } else {
+          updateUser(null);
+      }
+  });
 });
+
+
 
 // Rota DELETE para deletar usuários com autenticação de administrador
 app.delete("/api/users/:id", authenticateAdmin, (req, res) => {
