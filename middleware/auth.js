@@ -7,16 +7,16 @@ const SECRET_KEY = process.env.JWT_SECRET || 'admin@admin'; // Altere para um va
 function authenticateAdmin(req, res, next) {
   const token = req.headers.authorization?.split(' ')[1];
   if (!token) {
-      return res.status(401).send("Token ausente.");
+      return res.status(401).send({ message:"Token ausente."});
   }
 
   jwt.verify(token, SECRET_KEY, (err, decoded) => {
       if (err) {
-          return res.status(403).send("Token inválido.");
+          return res.status(403).send({ message: "Token inválido." });
       }
 
       if (!decoded.isAdmin) {
-          return res.status(403).send("Acesso negado. Apenas administradores.");
+          return res.status(403).send( { message: "Acesso negado. Apenas administradores."});
       }
 
       req.user = decoded; // Armazena os dados decodificados no request

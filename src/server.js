@@ -9,6 +9,7 @@ const swaggerUi = require("swagger-ui-express");
 const swaggerDocument = require("../config/swagger.json");
 const { authenticateAdmin } = require("../middleware/auth");
 const path = require("path");
+const { error } = require("console");
 const app = express();
 const port = 3000;
 
@@ -21,10 +22,10 @@ function authenticateToken(req, res, next) {
   const authHeader = req.headers["authorization"];
   const token = authHeader && authHeader.split(" ")[1];
 
-  if (!token) return res.status(401).send("Token não fornecido.");
+  if (!token) return res.status(401).send({message:"Token não fornecido."});
 
   jwt.verify(token, SECRET_KEY, (err, user) => {
-    if (err) return res.status(403).send("Token inválido.");
+    if (err) return res.status(403).send({message:"Token inválido."});
     req.user = user;
     next();
   });
@@ -33,7 +34,7 @@ function authenticateToken(req, res, next) {
 // Middleware para verificar se é admin
 function isAdmin(req, res, next) {
   if (!req.user.isAdmin) {
-    return res.status(403).send("Acesso negado. Apenas administradores.");
+    return res.status(403).send({message:"Acesso negado. Apenas administradores."});
   }
   next();
 }
@@ -95,11 +96,11 @@ app.get("/api/produtos", (req, res) => {
     [limit, offset],
     (err, rows) => {
       if (err) {
-        res.status(500).send("Erro ao buscar produtos.");
+        res.status(500).send({ error:"Erro ao buscar produtos."});
       } else {
         db.get("SELECT COUNT(*) as total FROM Products", (err, result) => {
           if (err) {
-            res.status(500).send("Erro ao calcular o total de produtos.");
+            res.status(500).send({ error:"Erro ao calcular o total de produtos."});
           } else {
             const total = result.total;
             const totalPages = Math.ceil(total / limit);
@@ -122,14 +123,14 @@ app.post("/api/registrar", (req, res) => {
 
   bcrypt.hash(password, saltRounds, (err, hashedPassword) => {
     if (err) {
-      return res.status(500).send("Erro ao registrar usuário.");
+      return res.status(500).send({ error:"Erro ao registrar usuário."});
     }
     db.run(
       "INSERT INTO Users (name, email, password) VALUES (?, ?, ?)",
       [name, email, hashedPassword],
       function (err) {
         if (err) {
-          res.status(500).send("Erro ao registrar usuário.");
+          res.status(500).send({ error:"Erro ao registrar usuário."});
         } else {
           res.status(201).send({ id: this.lastID });
         }
@@ -169,12 +170,12 @@ app.post("/api/checkout", (req, res) => {
   if (createAccount) {
     db.get("SELECT * FROM Users WHERE email = ?", [email], (err, user) => {
       if (err) {
-        return res.status(500).send("Erro ao verificar e-mail.");
+        return res.status(500).send({ error: "Erro ao verificar e-mail."});
       }
       if (user) {
         return res
           .status(400)
-          .send("E-mail já registrado. Tente um email diferente");
+          .send({message:"E-mail já registrado. Tente um email diferente"});
       }
       createNewUser();
     });
@@ -186,7 +187,7 @@ app.post("/api/checkout", (req, res) => {
     const saltRounds = 10;
     bcrypt.hash(password, saltRounds, (err, hashedPassword) => {
       if (err) {
-        return res.status(500).send("Erro ao criar conta.");
+        return res.status(500).send({ error:"Erro ao criar conta."});
       }
 
       db.run(
@@ -194,7 +195,7 @@ app.post("/api/checkout", (req, res) => {
         [email, hashedPassword, `${firstName} ${lastName}`],
         function (err) {
           if (err) {
-            return res.status(500).send("Erro ao criar conta.");
+            return res.status(500).send({ error:"Erro ao criar conta."});
           }
           processOrder(this.lastID);
         }
@@ -210,7 +211,7 @@ app.post("/api/checkout", (req, res) => {
 
     db.all(query, [finalUserId], (err, rows) => {
       if (err) {
-        return res.status(500).send("Erro ao calcular total do pedido.");
+        return res.status(500).send({ error:"Erro ao calcular total do pedido."});
       }
 
       const totalPrice =
@@ -243,7 +244,7 @@ app.post("/api/checkout", (req, res) => {
         ],
         function (err) {
           if (err) {
-            return res.status(500).send("Erro ao finalizar pedido.");
+            return res.status(500).send({ error:"Erro ao finalizar pedido."});
           }
 
           const orderId = this.lastID;
@@ -258,7 +259,7 @@ app.post("/api/checkout", (req, res) => {
               if (err) {
                 return res
                   .status(500)
-                  .send("Erro ao atualizar número do pedido.");
+                  .send({error:"Erro ao atualizar número do pedido."});
               }
 
               db.run(
@@ -266,7 +267,7 @@ app.post("/api/checkout", (req, res) => {
                 [finalUserId],
                 function (err) {
                   if (err) {
-                    return res.status(500).send("Erro ao limpar o carrinho.");
+                    return res.status(500).send({ error:"Erro ao limpar o carrinho."});
                   }
                   res.status(201).send({ id: orderId, orderNumber });
                 }
@@ -284,7 +285,7 @@ app.post("/api/limpar-carrinho", (req, res) => {
   const { userId } = req.body;
   db.run("DELETE FROM Cart WHERE user_id = ?", [userId], function (err) {
     if (err) {
-      res.status(500).send("Erro ao limpar o carrinho.");
+      res.status(500).send({ error:"Erro ao limpar o carrinho."});
     } else {
       res.status(200).send({ message: "Carrinho limpo com sucesso." });
     }
@@ -300,7 +301,7 @@ app.post("/api/carrinho", (req, res) => {
     [userId, productId],
     (err, row) => {
       if (err) {
-        res.status(500).send("Erro ao buscar produto no carrinho.");
+        res.status(500).send({ error:"Erro ao buscar produto no carrinho."});
       } else if (row) {
         db.run(
           "UPDATE Cart SET quantity = quantity + ? WHERE user_id = ? AND product_id = ?",
@@ -309,7 +310,7 @@ app.post("/api/carrinho", (req, res) => {
             if (err) {
               res
                 .status(500)
-                .send("Erro ao atualizar quantidade do produto no carrinho.");
+                .send({ error:"Erro ao atualizar quantidade do produto no carrinho."});
             } else {
               res
                 .status(200)
@@ -325,7 +326,7 @@ app.post("/api/carrinho", (req, res) => {
           [userId, productId, quantity],
           function (err) {
             if (err) {
-              res.status(500).send("Erro ao adicionar produto ao carrinho.");
+              res.status(500).send({ error:"Erro ao adicionar produto ao carrinho."});
             } else {
               res
                 .status(201)
@@ -349,7 +350,7 @@ app.get("/api/carrinho/:userId", (req, res) => {
     [userId],
     (err, rows) => {
       if (err) {
-        res.status(500).send("Erro ao buscar produtos no carrinho.");
+        res.status(500).send({ error:"Erro ao buscar produtos no carrinho."});
       } else {
         res.json(rows);
       }
@@ -363,7 +364,7 @@ app.delete("/api/carrinho/:userId", (req, res) => {
 
   db.run("DELETE FROM Cart WHERE user_id = ?", [userId], function (err) {
     if (err) {
-      return res.status(500).send("Erro ao remover itens do carrinho.");
+      return res.status(500).send({ error:"Erro ao remover itens do carrinho."});
     }
     res.status(200).json({ message: "Todos os itens do carrinho removidos com sucesso." });
   });
@@ -375,7 +376,7 @@ app.delete("/api/carrinho/:userId/:productId", (req, res) => {
 
   db.run("DELETE FROM Cart WHERE user_id = ? AND product_id = ?", [userId, productId], function (err) {
     if (err) {
-      return res.status(500).send("Erro ao remover item do carrinho.");
+      return res.status(500).send({ error:"Erro ao remover item do carrinho."});
     }
     res.status(200).json({ message: "Item do carrinho removido com sucesso." });
   });
@@ -386,9 +387,9 @@ app.get("/api/produtos/:id", (req, res) => {
   const productId = req.params.id;
   db.get("SELECT * FROM Products WHERE id = ?", [productId], (err, row) => {
     if (err) {
-      res.status(500).send("Erro ao buscar detalhes do produto.");
+      res.status(500).send({ error:"Erro ao buscar detalhes do produto."});
     } else if (!row) {
-      res.status(404).send("Produto não encontrado.");
+      res.status(404).send({message:"Produto não encontrado."});
     } else {
       res.json(row);
     }
@@ -400,11 +401,11 @@ app.get("/api/orders/:orderId", (req, res) => {
   const orderId = req.params.orderId;
   db.get("SELECT * FROM Orders WHERE id = ?", [orderId], (err, row) => {
     if (err) {
-      return res.status(500).send("Erro ao buscar status do pedido.");
+      return res.status(500).send({ error:"Erro ao buscar status do pedido."});
     }
 
     if (!row) {
-      return res.status(404).send("Pedido não encontrado.");
+      return res.status(404).send({message:"Pedido não encontrado."});
     }
 
     const formattedOrderId = `${row.id}-${
@@ -422,12 +423,12 @@ app.post("/api/login", (req, res) => {
   const { email, password } = req.body;
   db.get("SELECT * FROM Users WHERE email = ?", [email], (err, user) => {
     if (err || !user) {
-      return res.status(401).send({ error: "Email ou senha incorretos." });
+      return res.status(401).send({message:"Email ou senha incorretos." });
     }
 
     bcrypt.compare(password, user.password, (err, result) => {
       if (err || !result) {
-        return res.status(401).send({ error: "Email ou senha incorretos." });
+        return res.status(401).send({message:"Email ou senha incorretos." });
       }
 
       const token = jwt.sign(
@@ -445,7 +446,7 @@ app.get("/api/orders", (req, res) => {
   const userId = req.query.userId;
   db.all("SELECT * FROM Orders WHERE user_id = ?", [userId], (err, rows) => {
     if (err) {
-      res.status(500).send("Erro ao buscar pedidos.");
+      res.status(500).send({error:"Erro ao buscar pedidos."});
     } else {
       const orders = rows.map((order) => {
         const formattedOrderId = `${order.id}-${
@@ -474,9 +475,9 @@ app.get("/api/ultimo-pedido/:userId", (req, res) => {
     [userId],
     (err, row) => {
       if (err) {
-        res.status(500).send("Erro ao buscar o último pedido.");
+        res.status(500).send({error:"Erro ao buscar o último pedido."});
       } else if (!row) {
-        res.status(404).send("Nenhum pedido encontrado.");
+        res.status(404).send({message:"Nenhum pedido encontrado."});
       } else {
         res.json(row);
       }
@@ -494,7 +495,7 @@ app.put("/api/cart/:id", (req, res) => {
     [quantity, id],
     function (err) {
       if (err) {
-        return res.status(500).send("Erro ao atualizar item no carrinho.");
+        return res.status(500).send({error:"Erro ao atualizar item no carrinho."});
       }
       res
         .status(200)
@@ -509,9 +510,9 @@ app.delete("/api/cart/:id", (req, res) => {
 
   db.run("DELETE FROM Cart WHERE id = ?", [id], function (err) {
     if (err) {
-      return res.status(500).send("Erro ao remover item do carrinho.");
+      return res.status(500).send({error:"Erro ao remover item do carrinho."});
     }
-    res.status(200).json({ message: "Item do carrinho removido com sucesso." });
+    res.status(200).json({ message: "Item do carrinho removido com sucesso."});
   });
 });
 
@@ -521,15 +522,15 @@ app.post("/api/users", (req, res) => {
 
   db.get("SELECT * FROM Users WHERE email = ?", [email], (err, row) => {
     if (err) {
-      return res.status(500).send("Erro ao verificar o email.");
+      return res.status(500).send({error:"Erro ao verificar o email."});
     }
     if (row) {
-      return res.status(400).send("Email já cadastrado.");
+      return res.status(400).send({message:"Email já cadastrado."});
     }
 
     bcrypt.hash(password, 10, (err, hashedPassword) => {
       if (err) {
-        return res.status(500).send("Erro ao processar a senha.");
+        return res.status(500).send({error:"Erro ao processar a senha."});
       }
 
       db.run(
@@ -539,7 +540,7 @@ app.post("/api/users", (req, res) => {
           if (err) {
             return res
               .status(500)
-              .send("Erro ao criar usuário. Verifique as regras de negócio");
+              .send({error:"Erro ao criar usuário. Verifique as regras de negócio"});
           }
           res.status(201).json({
             message: "Usuário criado com sucesso.",
@@ -555,7 +556,7 @@ app.post("/api/users", (req, res) => {
 app.get("/api/users", (req, res) => {
   db.all("SELECT id, name, email, isAdmin FROM Users", (err, rows) => {
     if (err) {
-      return res.status(500).send("Erro ao listar usuários.");
+      return res.status(500).send({error:"Erro ao listar usuários."});
     }
     res.send(rows);
   });
@@ -568,10 +569,10 @@ app.put("/api/users/:id", authenticateAdmin, (req, res) => {
 
   db.get("SELECT * FROM Users WHERE email = ? AND id != ?", [email, id], (err, row) => {
     if (err) {
-      return res.status(500).send("Erro ao verificar o email.");
+      return res.status(500).send({error:"Erro ao verificar o email."});
     }
     if (row) {
-      return res.status(400).send("Email já cadastrado por outro usuário.");
+      return res.status(400).send({message:"Email já cadastrado por outro usuário."});
     }
 
     const updateUser = (hashedPassword) => {
@@ -580,9 +581,9 @@ app.put("/api/users/:id", authenticateAdmin, (req, res) => {
         [name, email, hashedPassword, isAdmin ? 1 : 0, id],
         function (err) {
           if (err) {
-            return res.status(500).send("Erro ao atualizar o usuário.");
+            return res.status(500).send({error:"Erro ao atualizar o usuário."});
           }
-          res.status(200).json({ message: "Usuário atualizado com sucesso." });
+          res.status(200).json({ message:"Usuário atualizado com sucesso." });
         }
       );
     };
@@ -590,7 +591,7 @@ app.put("/api/users/:id", authenticateAdmin, (req, res) => {
     if (password) {
       bcrypt.hash(password, 10, (err, hashedPassword) => {
         if (err) {
-          return res.status(500).send("Erro ao processar a senha.");
+          return res.status(500).send({error:"Erro ao processar a senha."});
         }
         updateUser(hashedPassword);
       });
@@ -606,7 +607,7 @@ app.delete("/api/users/:id", authenticateAdmin, (req, res) => {
 
   db.run("DELETE FROM Users WHERE id = ?", [id], function (err) {
     if (err) {
-      return res.status(500).send("Erro ao deletar o usuário.");
+      return res.status(500).send({error:"Erro ao deletar o usuário."});
     }
     res.status(200).json({ message: "Usuário deletado com sucesso." });
   });

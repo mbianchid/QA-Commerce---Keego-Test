@@ -109,6 +109,9 @@
               "$ref": "#/definitions/CarrinhoResponse"
             }
           },
+          "400": {
+            "description": "Erro ao adicionar produto ao carrinho. Verifique se o produto já está no carrinho."
+          },
           "500": {
             "description": "Erro ao adicionar produto ao carrinho."
           }
@@ -170,7 +173,7 @@
             }
           },
           "400": {
-            "description": "Erro de validação nos dados fornecidos."
+            "description": "Erro de validação nos dados fornecidos. Verifique se todos os campos obrigatórios foram preenchidos corretamente."
           },
           "500": {
             "description": "Erro ao finalizar pedido."
@@ -267,7 +270,7 @@
     "/users": {
       "post": {
         "summary": "Criar um novo usuário",
-        "description": "Cria um novo usuário com base nos dados fornecidos.",
+        "description": "Cria um novo usuário com base nos dados fornecidos. \nNão é permitido criar email repetido. ",
         "parameters": [
           {
             "name": "body",
@@ -280,13 +283,10 @@
         ],
         "responses": {
           "201": {
-            "description": "Usuário criado com sucesso.",
-            "schema": {
-              "$ref": "#/definitions/UserResponse"
-            }
+            "description": "Usuário criado com sucesso."
           },
           "400": {
-            "description": "Erro de validação nos dados fornecidos."
+            "description": "Erro de validação nos dados fornecidos. Verifique se o email já está em uso."
           },
           "500": {
             "description": "Erro ao criar usuário."
@@ -312,7 +312,7 @@
     "/users/{id}": {
       "put": {
         "summary": "Atualizar usuário",
-        "description": "Atualiza os dados de um usuário existente.",
+        "description": "Atualiza os dados de um usuário existente. \nRota somente para usuários autenticados.",
         "parameters": [
           {
             "name": "id",
@@ -346,7 +346,7 @@
       },
       "delete": {
         "summary": "Deletar usuário",
-        "description": "Deleta um usuário existente.",
+        "description": "Deleta um usuário existente. \n Rota somente para usuários autenticados.",
         "parameters": [
           {
             "name": "id",
