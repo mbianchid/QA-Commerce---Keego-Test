@@ -35,8 +35,3 @@ A documentação funciona em: http://localhost:3000/api-docs/
 
 *Parceria: Fábio Araújo, Bruna Emerich e Tamara Fontanella
 
-
-
-
-
-

@@ -5,7 +5,10 @@
   "main": "index.js",
   "scripts": {
     "start": "node src/server.js",
-    "db": "node scripts/init_db.js"
+    "dev": "nodemon src/server.js",
+    "dev:app": "node -e \"console.log('Inicie o app do repo base com `npm start` no projeto original. Aqui rodamos somente os testes.')\"",
+    "cy:open": "cypress open --e2e",
+    "cy:run": "cypress run --e2e"
   },
   "keywords": [],
   "author": "",
@@ -20,5 +23,11 @@
     "sqlite3": "^5.1.7",
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.1"
+  },
+  "devDependencies": {
+    "@badeball/cypress-cucumber-preprocessor": "^20.0.5",
+    "@bahmutov/cypress-esbuild-preprocessor": "^2.2.0",
+    "cypress": "^13.13.2",
+    "esbuild": "^0.21.5"
   }
 }
