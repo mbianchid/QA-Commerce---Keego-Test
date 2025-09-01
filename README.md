@@ -1,4 +1,8 @@
-# QA-Commerce
+# Descrição
+
+Projeto de automação de testes para uma plataforma e-commerce fictícia, criado como parte do desafio técnico da Keegoo. A aplicação usa Cypress para realizar testes end-to-end robustos, interagindo com os fluxos principais da loja online.
+
+## QA-Commerce
 
 ### Loja virtual Geek para simulação de testes 
 
@@ -33,5 +37,47 @@ O site você acessaem: http://localhost:3000/
 
 A documentação funciona em: http://localhost:3000/api-docs/
 
-*Parceria: Fábio Araújo, Bruna Emerich e Tamara Fontanella
 
+## Funcionalidades
+
+Testes completos de fluxo de compra: busca de produtos, adicionar ao carrinho e checkout.
+Validação visual e funcional dos elementos da interface.
+
+## Tecnologias
+
+Node.js
+Cypress
+JavaScript (ES6+)
+npm
+
+### Executando os testes
+
+#### Para abrir o Cypress Interface (modo visual):
+
+npx cypress open
+
+#### Para rodar os testes em modo headless (ideal para CI/CD):
+
+npx cypress run
+
+
+Estrutura do projeto
+├── cypress/
+│   ├── e2e/                # Cenários e testes completos da aplicação
+│   ├── fixtures/           # Dados de teste
+│   ├── integration/        # Testes end-to-end
+│   ├── support/            # Comandos e configurações customizados
+│   ├── pageObjects/        # Objetos de página e interações centralizadas
+├── src/                    # Código da aplicação (se houver)
+├── tests/                  # Testes adicionais (unitários ou e2e)
+├── package.json
+├── cypress.config.js
+└── README.md
+
+
+#### Contato
+
+Autor: mbianchid
+GitHub: mbianchid
+
+E-mail: mbianchid.12@gmail.com
