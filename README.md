@@ -66,6 +66,7 @@ Estrutura do projeto
 ├── package.json
 ├── cypress.config.js
 └── README.md
+```
 
 #### Contato
 
