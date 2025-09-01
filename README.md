@@ -1,6 +1,6 @@
 # Descrição
 
-Projeto de automação de testes para uma plataforma e-commerce fictícia, criado como parte do desafio técnico da Keegoo. A aplicação usa Cypress para realizar testes end-to-end robustos, interagindo com os fluxos principais da loja online.
+Projeto de automação de testes para uma plataforma e-commerce fictícia, criado como parte do desafio técnico da Keegoo. A aplicação usa Cypress para realizar testes end-to-end, interagindo com os fluxos principais da loja online.
 
 ## QA-Commerce
 
@@ -13,6 +13,7 @@ Projeto de automação de testes para uma plataforma e-commerce fictícia, criad
 -Node.js - Você encontra em: https://nodejs.org/en/
 -Visual Studio Code ( ou editor de sua prefrência) - você encontra em: https://code.visualstudio.com/download
 -Git: você encontra em: https://git-scm.com/downloads
+-Cypress - Documentação para instalação: https://docs.cypress.io/app/get-started/install-cypress
 
 Via terminal, rode os seguintes comandos:
 ```  
@@ -37,18 +38,10 @@ O site você acessaem: http://localhost:3000/
 
 A documentação funciona em: http://localhost:3000/api-docs/
 
-
 ## Funcionalidades
 
 Testes completos de fluxo de compra: busca de produtos, adicionar ao carrinho e checkout.
 Validação visual e funcional dos elementos da interface.
-
-## Tecnologias
-
-Node.js
-Cypress
-JavaScript (ES6+)
-npm
 
 ### Executando os testes
 
@@ -60,7 +53,7 @@ npx cypress open
 
 npx cypress run
 
-
+```plaintext
 Estrutura do projeto
 ├── cypress/
 │   ├── e2e/                # Cenários e testes completos da aplicação
@@ -73,7 +66,6 @@ Estrutura do projeto
 ├── package.json
 ├── cypress.config.js
 └── README.md
-
 
 #### Contato
 
