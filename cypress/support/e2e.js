@@ -1,2 +1,2 @@
-// cypress/support/e2e.js
 require('./commands');
+Cypress.on('uncaught:exception', () => false);

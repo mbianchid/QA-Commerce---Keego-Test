@@ -63,7 +63,6 @@ When('tento finalizar o checkout com {string} vazio', (campo) => {
 });
 
 When('vou para o checkout e preencho com dados válidos criando conta', () => {
-  // ir para o checkout
   if (typeof cart.proceedCheckout === 'function') {
     cart.proceedCheckout();
   } else {
@@ -71,23 +70,103 @@ When('vou para o checkout e preencho com dados válidos criando conta', () => {
   }
   cy.url().should('match', /\/checkout(\.html)?/i);
 
-  // gera credenciais únicas e salva como alias
   const email = genEmail();
   const password = 'Teste@123';
   cy.wrap({ email, password }).as('cred');
 
-  // preenche dados de entrega
   checkout.fillValidData({
-    email, // garante o mesmo e-mail
+    email,
   });
 
-  // habilita criar conta + preenche senha
   checkout.enableCreateAccount({ email, password });
 });
 
+When('clico em Minha conta', () => {
+  cy.get('body').then(($b) => {
+    const byHref = $b.find('a[href*="login"]').first();
+    const byText = $b.find('a,button').filter((_i, el) =>
+      /minha conta|login|acessar/i.test(el.innerText || '')
+    ).first();
+
+    if (byHref.length) cy.wrap(byHref).click({ force: true });
+    else if (byText.length) cy.wrap(byText).click({ force: true });
+    else cy.visit('/login.html');
+  });
+
+  cy.location('pathname', { timeout: 10000 }).should('match', /\/login(\.html)?$/i);
+});
+
+When('faço o login com dados válidos', () => {
+  const email = Cypress.env('loginEmail');
+  const password = Cypress.env('loginPassword') || 'Teste@123';
+
+  if (!email) {
+    throw new Error('Defina --env loginEmail=<seu_email> (e opcionalmente loginPassword)');
+  }
+
+  const typeFirstExisting = (cands, value) =>
+    cy.document().then((doc) => {
+      for (const s of cands) {
+        try { if (doc.querySelector(s)) { cy.get(s).first().clear({force:true}).type(value, {force:true}); return; } } catch(e){}
+      }
+      throw new Error(`Nenhum seletor encontrado entre: ${cands.join(', ')}`);
+    });
+
+  typeFirstExisting(['#email','[name="email"]','input[type="email"]'], String(email));
+  typeFirstExisting(['#password','[name="password"]','input[type="password"]'], String(password));
+
+  cy.contains('button,[type="submit"],[data-testid="login"]', /entrar|login|acessar/i)
+    .first()
+    .click({ force: true });
+});
+
+When('sou direcionado para o dashboard', () => {
+  cy.location('pathname', { timeout: 15000 }).should('match', /\/dashboard(\.html)?$/i);
+});
+
+When('clico no botão para alterar meu cadastro', () => {
+  const openAccountSection = () => {
+    cy.get('body').then(($b) => {
+      const byText = $b.find('a,button,[role="tab"]').filter((_i, el) =>
+        /minha conta|meu cadastro|perfil|dados|account|profile/i.test(el.innerText || '')
+      ).first();
+      if (byText.length) cy.wrap(byText).click({ force: true });
+    });
+  };
+
+  openAccountSection();
+
+  cy.get('body').then(($b) => {
+    const editBtn = $b.find('button,a').filter((_i, el) =>
+      /editar|alterar|atualizar dados|editar perfil|edit/i.test(el.innerText || '')
+    ).first();
+    if (editBtn.length) cy.wrap(editBtn).click({ force: true });
+  });
+});
+
+When('coloco meus novos dados válidos', () => {
+  const { AccountPage } = require('../../pageObjects/AccountPage');
+  const account = new AccountPage();
+
+  account.fillValidData({
+    address: `Rua QA ${Date.now()}`,
+    number: '101',
+  });
+
+  account.save();
+});
+
+Then('verifico a mensagem de sucesso', () => {
+  const { AccountPage } = require('../../pageObjects/AccountPage');
+  const account = new AccountPage();
+  account.shouldSeeSuccess();
+});
 
 When('faço login com a conta criada', () => {
   cy.get('@cred').then(({ email, password }) => {
+    const { LoginPage } = require('../../pageObjects/LoginPage');
+    const login = new LoginPage();
+
     login.open();
     login.login(email, password);
   });
@@ -98,11 +177,22 @@ Then('devo ver a mensagem de erro para {string}', (campo) => {
 });
 
 Given('acesso minha conta', () => {
-  account.openMyAccount();
+  const { AccountPage } = require('../../pageObjects/AccountPage');
+  const account = new AccountPage();
+  account.open();
 });
 
-When('altero meus dados com dados válidos', () => {
-  account.fillValidData();
+  When('altero meus dados com dados válidos', () => {
+  const { AccountPage } = require('../../pageObjects/AccountPage');
+  const account = new AccountPage();
+
+  account.open();
+
+  account.fillValidData({
+    name: `QA Tester ${Date.now()}`,
+    email: `qa+${Date.now()}@example.com`,
+  });
+
   account.save();
 });
 
@@ -111,6 +201,8 @@ When('altero meu cadastro com nome {string} e email {string}', (nome, email) => 
 });
 
 Then('devo ver a mensagem de sucesso do cadastro', () => {
+  const { AccountPage } = require('../../pageObjects/AccountPage');
+  const account = new AccountPage();
   account.shouldSeeSuccess();
 });
 

@@ -6,20 +6,20 @@ Feature: Fluxos principais de loja
   Background:
     Given que estou na página inicial
 
-# @frontend @carrinho @cleanCart
-# Scenario: Adicionar e validar item no carrinho por ID
-#     Given que estou na página inicial
-#     When adiciono o produto "Se você acha que nada é impossível" ao carrinho
-#     And abro o carrinho
-#     Then devo ver no carrinho o item de id 1 com quantidade 1
+@frontend @carrinho @cleanCart
+Scenario: Adicionar e validar item no carrinho por ID
+    Given que estou na página inicial
+    When adiciono o produto "Se você acha que nada é impossível" ao carrinho
+    And abro o carrinho
+    Then devo ver no carrinho o item de id 1 com quantidade 1
 
-#   @frontend @checkout @cleanCart
-#   Scenario: Checkout simples com sucesso
-#     Given adiciono o produto "/Se você acha que nada é impossível/" ao carrinho
-#     And abro o carrinho
-#     When vou para o checkout e preencho com dados válidos
-#     And finalizo a compra
-#     Then devo ver a mensagem de sucesso do pedido
+  @frontend @checkout @cleanCart
+  Scenario: Checkout simples com sucesso
+    Given adiciono o produto "/Se você acha que nada é impossível/" ao carrinho
+    And abro o carrinho
+    When vou para o checkout e preencho com dados válidos
+    And finalizo a compra
+    Then devo ver a mensagem de sucesso do pedido
 
   # @frontend @validacao
   # Scenario Outline: Mensagens de erro em campos obrigatórios do checkout
