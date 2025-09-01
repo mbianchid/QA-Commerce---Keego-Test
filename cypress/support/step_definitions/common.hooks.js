@@ -6,7 +6,7 @@ const apiBase = () =>
 Before({ tags: "@cleanCart" }, () => {
   cy.request({
     method: "DELETE",
-    url: `${apiBase()}/api/carrinho`,
+    url: `${apiBase()}/api/carrinho/1`,
     failOnStatusCode: false,
   })
   .its('status')

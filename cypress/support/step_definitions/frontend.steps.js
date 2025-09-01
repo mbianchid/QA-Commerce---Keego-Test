@@ -16,6 +16,8 @@ Given('que estou na página inicial', () => {
 });
 
 When('adiciono o produto {string} ao carrinho', (nome) => {
+  const { ProductPage } = require('../../pageObjects/ProductPage');
+  const product = new ProductPage();
   product.addToCartFromCard(nome);
 });
 
@@ -50,7 +52,7 @@ When('finalizo a compra', () => {
 });
 
 Then('devo ver a mensagem de sucesso do pedido', () => {
-  checkout.successMessage().should('be.visible');
+  checkout.shouldSeeSuccessMessage();
 });
 
 When('tento finalizar o checkout com {string} vazio', (campo) => {
@@ -73,4 +75,16 @@ When('altero meu cadastro com nome {string} e email {string}', (nome, email) => 
 
 Then('devo ver o aviso de sucesso de atualização', () => {
   account.toast().should('be.visible');
+});
+
+When('vou para o checkout e preencho com dados válidos', () => {
+  if (typeof cart.proceedCheckout === 'function') {
+    cart.proceedCheckout();
+  } else {
+    cy.contains('a,button', /checkout|finalizar|fechar pedido/i).click({ force: true });
+  }
+
+  cy.url().should('match', /\/checkout(\.html)?/i);
+
+  checkout.fillValidData();
 });
