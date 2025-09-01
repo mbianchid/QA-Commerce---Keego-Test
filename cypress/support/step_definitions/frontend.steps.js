@@ -10,6 +10,7 @@ const product = new ProductPage();
 const cart = new CartPage();
 const checkout = new CheckoutPage();
 const account = new AccountPage();
+const genEmail = () => `qa+${Date.now()}@example.com`;
 
 Given('que estou na página inicial', () => {
   cy.visit('/');
@@ -61,16 +62,56 @@ When('tento finalizar o checkout com {string} vazio', (campo) => {
   checkout.submit();
 });
 
+When('vou para o checkout e preencho com dados válidos criando conta', () => {
+  // ir para o checkout
+  if (typeof cart.proceedCheckout === 'function') {
+    cart.proceedCheckout();
+  } else {
+    cy.contains('a,button', /checkout|finalizar|fechar pedido/i).click({ force: true });
+  }
+  cy.url().should('match', /\/checkout(\.html)?/i);
+
+  // gera credenciais únicas e salva como alias
+  const email = genEmail();
+  const password = 'Teste@123';
+  cy.wrap({ email, password }).as('cred');
+
+  // preenche dados de entrega
+  checkout.fillValidData({
+    email, // garante o mesmo e-mail
+  });
+
+  // habilita criar conta + preenche senha
+  checkout.enableCreateAccount({ email, password });
+});
+
+
+When('faço login com a conta criada', () => {
+  cy.get('@cred').then(({ email, password }) => {
+    login.open();
+    login.login(email, password);
+  });
+});
+
 Then('devo ver a mensagem de erro para {string}', (campo) => {
   checkout.errorByTestId(campo).should('be.visible');
 });
 
 Given('acesso minha conta', () => {
-  account.open();
+  account.openMyAccount();
+});
+
+When('altero meus dados com dados válidos', () => {
+  account.fillValidData();
+  account.save();
 });
 
 When('altero meu cadastro com nome {string} e email {string}', (nome, email) => {
   account.editProfile({ name: nome, email });
+});
+
+Then('devo ver a mensagem de sucesso do cadastro', () => {
+  account.shouldSeeSuccess();
 });
 
 Then('devo ver o aviso de sucesso de atualização', () => {

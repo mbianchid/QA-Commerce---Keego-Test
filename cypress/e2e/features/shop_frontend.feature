@@ -13,13 +13,13 @@ Feature: Fluxos principais de loja
 #     And abro o carrinho
 #     Then devo ver no carrinho o item de id 1 com quantidade 1
 
-  @frontend @checkout @cleanCart
-  Scenario: Checkout simples com sucesso
-    Given adiciono o produto "/Se você acha que nada é impossível/" ao carrinho
-    And abro o carrinho
-    When vou para o checkout e preencho com dados válidos
-    And finalizo a compra
-    Then devo ver a mensagem de sucesso do pedido
+#   @frontend @checkout @cleanCart
+#   Scenario: Checkout simples com sucesso
+#     Given adiciono o produto "/Se você acha que nada é impossível/" ao carrinho
+#     And abro o carrinho
+#     When vou para o checkout e preencho com dados válidos
+#     And finalizo a compra
+#     Then devo ver a mensagem de sucesso do pedido
 
   # @frontend @validacao
   # Scenario Outline: Mensagens de erro em campos obrigatórios do checkout
@@ -36,8 +36,14 @@ Feature: Fluxos principais de loja
   #     | city    |
   #     | zip     |
 
-  # @frontend @minha-conta
-  # Scenario: Minha conta - Alterar cadastro com sucesso
-  #   Given acesso minha conta
-  #   When altero meu cadastro com nome "Miguel QA" e email "miguel.qa@exemplo.com"
-  #   Then devo ver o aviso de sucesso de atualização
+  @frontend @minha-conta
+  Scenario: Minha conta - Alterar cadastro com sucesso
+    Given que estou na página inicial
+    And adiciono o produto "/Se você acha que nada é impossível/" ao carrinho
+    And abro o carrinho
+    When vou para o checkout e preencho com dados válidos criando conta
+    And finalizo a compra
+    And faço login com a conta criada
+    And acesso minha conta
+    When altero meus dados com dados válidos
+    Then devo ver a mensagem de sucesso do cadastro

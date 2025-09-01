@@ -82,4 +82,37 @@ export class CheckoutPage {
       }
     });
   }
+
+enableCreateAccount({ email, password = 'Pass123@', confirmPassword } = {}) {
+  const pass = password || 'Pass123@';
+  const confirm = confirmPassword || pass;
+
+  cy.get('body').then(($b) => {
+    if ($b.find('input[name="createAccount"]').length) {
+      cy.get('input[name="createAccount"]').check({ force: true });
+    } else {
+      cy.contains(/criar (uma )?conta/i).click({ force: true });
+    }
+  });
+
+  if (email) {
+    const candidatesEmail = ['#email', '[name="email"]', 'input[type="email"]'];
+    const selEmail = candidatesEmail.find((s) => Cypress.$(s).length);
+    if (selEmail) cy.get(selEmail).clear({ force: true }).type(email, { force: true });
+  }
+
+  cy.get('body').then(($b) => {
+    const pwdSel =
+      ($b.find('#password').length && '#password') ||
+      ($b.find('[name="password"]').length && '[name="password"]') ||
+      null;
+    if (pwdSel) cy.get(pwdSel).clear({ force: true }).type(pass, { force: true });
+
+    const confirmSel =
+      ($b.find('#confirm-password').length && '#confirm-password') ||
+      ($b.find('[name="confirm-password"]').length && '[name="confirm-password"]') ||
+      null;
+    if (confirmSel) cy.get(confirmSel).clear({ force: true }).type(confirm, { force: true });
+  });
+  }
 }
